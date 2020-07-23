@@ -1,29 +1,53 @@
-<template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
-  </div>
+<template lang="pug">
+    #app
+        Viewer(v-bind:dictionaries="dictionaries")
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
-import HelloWorld from './components/HelloWorld.vue'
+import { Component, Vue } from 'vue-property-decorator';
+import Viewer from './components/Viewer.vue';
+import { DictionaryManager } from './libs/dictionary.manager';
 
 @Component({
-  components: {
-    HelloWorld
-  }
+    components: {
+        Viewer
+    },
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+    private dictionaries: DictionaryManager;
+
+    constructor () {
+        super();
+
+        this.dictionaries = new DictionaryManager();
+    }
+}
 </script>
 
 <style lang="scss">
+$main-color: black;
+$sub-color: white;
+
+body {
+    margin: 0;
+    padding: 0;
+}
+.flex {
+    display: flex;
+    box-sizing: border-box;
+    .half {
+        flex-basis: 50%;
+    }
+}
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+    color: $main-color;
+    background-color: $sub-color;
+    font-family: "Yu Gothic", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 </style>

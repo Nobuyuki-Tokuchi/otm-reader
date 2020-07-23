@@ -31,6 +31,7 @@
     "node-sass": "^4.12.0",
     "sass-loader": "^8.0.2",
     "typescript": "~3.9.3",
+    "vue-cli-plugin-pug": "^1.0.7",
     "vue-template-compiler": "^2.6.11"
   },
   "eslintConfig": {
@@ -40,7 +41,7 @@
     },
     "extends": [
       "plugin:vue/essential",
-      "@vue/standard",
+      "eslint:recommended",
       "@vue/typescript/recommended"
     ],
     "parserOptions": {
