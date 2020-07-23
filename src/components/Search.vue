@@ -159,14 +159,6 @@ $sub-color: white;
                 flex-grow: 1;
             }
 
-            button {
-                color: $sub-color;
-                background-color: $main-color;
-                border: 0;
-                padding-top: 2px;
-                padding-bottom: 2px;
-            }
-
             &.selected {
                 display: initial;
             }

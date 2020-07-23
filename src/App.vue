@@ -39,6 +39,13 @@ body {
         flex-basis: 50%;
     }
 }
+button {
+    color: $sub-color;
+    background-color: $main-color;
+    border: 0;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
 #app {
     color: $main-color;
     background-color: $sub-color;

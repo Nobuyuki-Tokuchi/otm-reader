@@ -34,29 +34,34 @@ export class DictionaryManager {
             const dict = this.dictionaries.get(name);
             if (dict) {
                 let result: OtmWord[];
-                switch (searchItem.searchType) {
-                    case SearchType.WORD:
-                        result = dict.words.filter(x => matchFunc(x.entry.form, searchItem.word));
-                        break;
-                    case SearchType.TRANSLATION:
-                        result = dict.words.filter(x => x.translations.some(y => matchFunc(y.forms, searchItem.word)));
-                        break;
-                    case SearchType.TAG:
-                        result = dict.words.filter(x => matchFunc(x.tags, searchItem.word));
-                        break;
-                    case SearchType.TRANSLATION_TITLE:
-                        result = dict.words.filter(x => x.translations.some(y => matchFunc(y.title, searchItem.word)));
-                        break;
-                    case SearchType.VARIATION_TITLE:
-                        result = dict.words.filter(x => x.variations.some(y => matchFunc(y.title, searchItem.word)));
-                        break;
-                    case SearchType.ALL:
-                    default:
-                        result = dict.words.filter(x => matchFunc(x.entry.form, searchItem.word)
-                            || x.translations.some(y => matchFunc(y.forms, searchItem.word) || matchFunc(y.title, searchItem.word))
-                            || matchFunc(x.tags, searchItem.word)
-                            || x.variations.some(y => matchFunc(y.title, searchItem.word)))
-                        break;
+                if ((searchItem.word === "" || searchItem.word == null) && (searchItem.matchType !== MatchType.EXACT && searchItem.matchType !== MatchType.NOT)) {
+                    result = dict.words;
+                }
+                else {
+                    switch (searchItem.searchType) {
+                        case SearchType.WORD:
+                            result = dict.words.filter(x => matchFunc(x.entry.form, searchItem.word));
+                            break;
+                        case SearchType.TRANSLATION:
+                            result = dict.words.filter(x => x.translations.some(y => matchFunc(y.forms, searchItem.word)));
+                            break;
+                        case SearchType.TAG:
+                            result = dict.words.filter(x => matchFunc(x.tags, searchItem.word));
+                            break;
+                        case SearchType.TRANSLATION_TITLE:
+                            result = dict.words.filter(x => x.translations.some(y => matchFunc(y.title, searchItem.word)));
+                            break;
+                        case SearchType.VARIATION_TITLE:
+                            result = dict.words.filter(x => x.variations.some(y => matchFunc(y.title, searchItem.word)));
+                            break;
+                        case SearchType.ALL:
+                        default:
+                            result = dict.words.filter(x => matchFunc(x.entry.form, searchItem.word)
+                                || x.translations.some(y => matchFunc(y.forms, searchItem.word) || matchFunc(y.title, searchItem.word))
+                                || matchFunc(x.tags, searchItem.word)
+                                || x.variations.some(y => matchFunc(y.title, searchItem.word)))
+                            break;
+                    }
                 }
                 result.forEach(x => x.dictionaryName = name);
                 words.push(...result);
