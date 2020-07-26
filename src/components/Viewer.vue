@@ -1,6 +1,6 @@
 <template lang="pug">
     .add-space
-        Search(v-on:search-word="search", v-on:search-script="searchScript" :dictionaries="dictionaries")
+        Search(@search-word="search", @search-script="searchScript", :dictionaries="dictionaries")
         .flex.between
             .flex.grow
                 button(@click="firstPage") 最初へ

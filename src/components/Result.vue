@@ -1,7 +1,7 @@
 <template lang="pug">
     .word-list
         .word(v-for="word in words")
-            .word-title.flex(v-bind:id="word.entry.id")
+            .word-title.flex(:id="word.entry.id")
                 label.word-name {{ word.entry.form }}
                 span.word-tag(v-for="tag in word.tags") {{ tag }}
                 span.dictionary-name {{ word.dictionaryName }}
@@ -10,7 +10,8 @@
                     .word-translation.title 訳語
                     .word-translation.flex(v-for="translation in word.translations")
                         .word-translation-title {{ translation.title }}
-                        .word-translation-text {{ translation.forms.join(",") }}
+                        .word-translation-text
+                            span.word-translation-form(v-for="form in translation.forms") {{ form }}
                 .word-contents.half
                     .word-content.title 内容
                     .word-content.flex(v-for="content in word.contents")
@@ -124,6 +125,17 @@ $sub-color: white;
                         border-right: solid 1px $main-color;
                     }
                 }
+            }
+        }
+
+        .word-translation-form {
+            &::after {
+                content: ",";
+                margin-right: 5px;
+            }
+            &:last-child::after {
+                content: initial;
+                margin-right: 0px;
             }
         }
     }

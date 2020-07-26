@@ -8,7 +8,7 @@
             .search-tab-content.search-panel(v-select="selected", data-value="1")
                 .flex
                     label 検索文字列
-                    input(type="text", v-model="searchItem.word")
+                    input(type="text", v-model="searchItem.word", @keypress="searchWhenEnter")
                     select(v-model="searchItem.searchType")
                         option(v-for="type in searchTypes", :value="type[0]") {{ type[1] }}
                     select(v-model="searchItem.matchType")
@@ -16,14 +16,15 @@
                     button(@click="$emit('search-word', searchItem)") 検索
             .search-tab-content(v-select="selected", data-value="2")
                 .flex
-                    textarea.script(rows="5", v-model="searchItem.script")
+                    textarea.script(rows="5", v-model="searchItem.script", @keypress="searchWhenEnter")
                     button(@click="$emit('search-script', searchItem)") 検索
             .search-tab-content.dictionary-list(v-select="selected", data-value="3")
                 .flex
-                    ul.half
-                        li.no-mark(v-for="name in dictionaryNames")
+                    ul.half(@click="removeDictionary")
+                        li.no-mark(v-for="(name, index) in dictionaryNames", :key="index")
                             input(type="checkbox", name="dict-name", :value="name", v-model="searchItem.targetNames")
                             span {{ name }}
+                            span.close(:data-key="index") &times;
                     div.half
                         input(type="file", multiple, @change="changeDictionaries")
 </template>
@@ -73,7 +74,22 @@ export default class Search extends Vue {
         };
     }
 
-    changeSelected(event: Event) {
+    searchWhenEnter(event: KeyboardEvent): void {
+        if (event.ctrlKey && event.key === "Enter") {
+            switch (this.selected) {
+                case "1":
+                    this.$emit("search-word", this.searchItem);
+                    break;
+                case "2":
+                    this.$emit("search-script", this.searchItem);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    changeSelected(event: Event): void {
         const el = event.target;
 
         if (el instanceof HTMLElement) {
@@ -85,13 +101,28 @@ export default class Search extends Vue {
         }
     }
 
-    changeDictionaries(event: Event) {
+    removeDictionary(event: Event): void {
+        const el = event.target;
+
+        if (el instanceof HTMLElement) {
+            const value = el.getAttribute("data-key");
+
+            if (value != null) {
+                const removeNames = this.dictionaryNames.splice(parseInt(value), 1);
+                if (removeNames.length > 0) {
+                    this.dictionaries.remove(removeNames[0]);
+                }
+            }
+        }
+    }
+
+    changeDictionaries(event: Event): void {
         const files = (event.target as HTMLInputElement).files;
 
         if (files) {
             for (const file of files) {
                 const reader = new FileReader();
-                reader.addEventListener("load", (event) => {
+                reader.addEventListener("load", () => {
                     const dictionary = JSON.parse(reader.result as string);
 
                     if (!this.dictionaryNames.includes(file.name)) {

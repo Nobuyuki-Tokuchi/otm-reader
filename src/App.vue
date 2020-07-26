@@ -57,4 +57,9 @@ button {
     margin-left: 10px;
     margin-right: 10px;
 }
+.close {
+    font-weight: bold;
+    padding: 2px;
+    cursor: pointer;
+}
 </style>

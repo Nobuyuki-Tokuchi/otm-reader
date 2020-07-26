@@ -22,6 +22,10 @@ export class DictionaryManager {
         return this.dictionaries.has(name);
     }
 
+    public remove(name: string): boolean {
+        return this.dictionaries.delete(name);
+    }
+
     public get dictionaryNames(): string[] {
         return Array.from(this.dictionaries.keys());
     }

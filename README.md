@@ -1,24 +1,18 @@
-# otm-reader
+# OTM Reader
+## 概要
+OTM-JSON形式の辞書内の単語や訳語を検索するためのWebアプリケーション
 
-## Project setup
-```
-npm install
-```
+## 特徴
+* 複数の辞書に対して一度に検索を行うことができる．
+* 自作の簡易検索スクリプト言語([OTM Search](https://github.com/Nobuyuki-Tokuchi/otmsearch))でよる検索も可能．
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## 使用ライブラリなど
+* Vue.js
 
-### Compiles and minifies for production
-```
-npm run build
-```
+その他はpackage.jsonのdependenciesを確認下さい．
 
-### Lints and fixes files
-```
-npm run lint
-```
+## コード記述
+* マークアップ：Pug
+* スクリプト：Typescript
+* スタイルシート：SCSS
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
