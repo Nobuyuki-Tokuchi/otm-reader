@@ -8,7 +8,7 @@
             .search-tab-content.search-panel(v-select="selected", data-value="1")
                 .flex
                     label 検索文字列
-                    input(type="text", v-model="searchItem.word", @keypress="searchWhenEnter")
+                    input(type="text", v-model="searchItem.word", @keydown="searchWhenEnter")
                     select(v-model="searchItem.searchType")
                         option(v-for="type in searchTypes", :value="type[0]") {{ type[1] }}
                     select(v-model="searchItem.matchType")
@@ -16,7 +16,7 @@
                     button(@click="$emit('search-word', searchItem)") 検索
             .search-tab-content(v-select="selected", data-value="2")
                 .flex
-                    textarea.script(rows="5", v-model="searchItem.script", @keypress="searchWhenEnter")
+                    textarea.script(rows="5", v-model="searchItem.script", @keydown="searchWhenEnter")
                     button(@click="$emit('search-script', searchItem)") 検索
             .search-tab-content.dictionary-list(v-select="selected", data-value="3")
                 .flex

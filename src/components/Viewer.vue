@@ -14,7 +14,7 @@
                 .px-10px
                     span 件数：
                     span {{ count }}
-        Result(:words="displayWords",)
+        Result(:words="displayWords")
         hr(v-if="count > 0")
         .flex.between(v-if="count > 0")
             .flex.grow
@@ -63,8 +63,6 @@ export default class Viewer extends Vue {
     @Prop() private dictionaries!: DictionaryManager;
     private result: OtmWord[];
     private listingCount: number;
-    private start: number;
-    private end: number;
     private pageCount: number;
     private maxPageCount: number;
 
@@ -72,8 +70,6 @@ export default class Viewer extends Vue {
         super();
         this.result = [];
         this.listingCount = 16;
-        this.start = 0;
-        this.end = this.listingCount;
         this.pageCount = 1;
         this.maxPageCount = 1;
     }
@@ -91,6 +87,7 @@ export default class Viewer extends Vue {
             }
         });
         this.maxPageCount = Math.ceil(this.result.length / this.listingCount); 
+        this.firstPage();
     }
 
     searchScript(searchItem: SearchItem): void {
@@ -106,6 +103,7 @@ export default class Viewer extends Vue {
             }
         });
         this.maxPageCount = Math.ceil(this.result.length / this.listingCount);
+        this.firstPage();
     }
 
     firstPage(): void {

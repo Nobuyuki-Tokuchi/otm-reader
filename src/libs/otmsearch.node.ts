@@ -26,7 +26,7 @@ export class StatementNode implements SearchNode {
     }
 }
 
-export class  PatternNode implements SearchNode {
+export class PatternNode implements SearchNode {
     public nodes: (BindOperatorNode | StatementNode)[];
 
     constructor() {
@@ -34,31 +34,33 @@ export class  PatternNode implements SearchNode {
     }
     
     public toString(): string {
-        return `ArrayNode{ nodes: [${this.nodes.join(",")}] }`;
+        return `PatternNode{ nodes: [${this.nodes.join(",")}] }`;
     }
 }
 
-export class  KeyNameNode implements DefineNode {
+export class KeyNameNode implements DefineNode {
     public name: string;
     public isArray: boolean;
+    public isOptional: boolean;
+
     constructor(name: string) {
-        const index = name.indexOf("[]");
-        if (index !== -1) {
-            this.name = name.substring(0, index);
-            this.isArray = true;
+        this.isArray = name.endsWith("[]");
+        if (this.isArray) {
+            name = name.slice(0, -2);
         }
-        else {
-            this.name = name;
-            this.isArray = false;
+        this.isOptional = name.endsWith("?");
+        if (this.isOptional) {
+            name = name.slice(0, -1);
         }
+        this.name = name;
     }
 
     public toString(): string {
-        return `KeywordNode{ node: ${this.name}, isArray: ${this.isArray} }`;
+        return `KeywordNode{ node: ${this.name}, isArray: ${this.isArray}, isOptional: ${this.isOptional} }`;
     }
 }
 
-export class  VariableNode implements DefineNode, ValueNode {
+export class VariableNode implements DefineNode, ValueNode {
     public name: string;
 
     constructor(name: string) {
@@ -78,7 +80,7 @@ export class  VariableNode implements DefineNode, ValueNode {
     }
 }
 
-export class  KeywordVariableNode implements ValueNode {
+export class KeywordVariableNode implements ValueNode {
     public value: string;
 
     constructor(value: string) {
@@ -90,7 +92,7 @@ export class  KeywordVariableNode implements ValueNode {
     }
 }
 
-export class  StringNode implements ValueNode {
+export class StringNode implements ValueNode {
     constructor(public value: string) {}
 
     public toString(): string {
@@ -98,7 +100,7 @@ export class  StringNode implements ValueNode {
     }
 }
 
-export class  NumberNode implements ValueNode {
+export class NumberNode implements ValueNode {
     constructor(public value: string) {}
 
     public toString(): string {
@@ -106,7 +108,7 @@ export class  NumberNode implements ValueNode {
     }
 }
 
-export class  BinaryOperatorNode implements OperatorNode {
+export class BinaryOperatorNode implements OperatorNode {
     public rhs: ValueNode | OperatorNode | null;
     public lhs: ValueNode | OperatorNode | null;
 
@@ -120,7 +122,7 @@ export class  BinaryOperatorNode implements OperatorNode {
     }
 }
 
-export class  UnaryOperatorNode implements OperatorNode {
+export class UnaryOperatorNode implements OperatorNode {
     public node: ValueNode | OperatorNode | null;
     constructor(public operator: string) {
         this.node = null;
@@ -131,7 +133,7 @@ export class  UnaryOperatorNode implements OperatorNode {
     }
 }
 
-export class  BindOperatorNode implements OperatorNode {
+export class BindOperatorNode implements OperatorNode {
     public lhs: VariableNode | KeyNameNode | null;
     public rhs: StatementNode | PatternNode | MatchingOperatorNode | OperatorNode | null;
     public readonly operator: string;
@@ -148,7 +150,7 @@ export class  BindOperatorNode implements OperatorNode {
 }
 
 export type MatchingType = 0 | 1 | 2 | 3;
-export class  MatchingOperatorNode implements OperatorNode {
+export class MatchingOperatorNode implements OperatorNode {
     public node: ValueNode | OperatorNode | null;
     public matchType: MatchingType;
 
@@ -189,7 +191,7 @@ export class  MatchingOperatorNode implements OperatorNode {
     ]);
 }
 
-export class  BraceNode implements OperatorNode {
+export class BraceNode implements OperatorNode {
     public node: OperatorNode | null;
     public readonly operator: string;
 
