@@ -26,5 +26,5 @@ OTM-JSON形式の辞書内の単語や訳語を検索するためのWebアプリ
 [こちら](http://ja.conlinguistics.wikia.com/wiki/OTM-JSON)を参照．
 
 ### 単語の登録方法は
-このアプリケーションは検索専用となっています．
-ZpDICやamuhikuなどでOTM-JSON形式の辞書が作成できますのでそちらをご使用下さい．
+このアプリケーションは検索専用となっています．  
+OTM-JSON形式への単語登録・修正などの辞書編集はZpDICやamuhikuなどをご使用下さい．
