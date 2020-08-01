@@ -35,10 +35,10 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import Search from './Search.vue';
 import Result from "./Result.vue";
-import { DictionaryManager } from '../libs/dictionary.manager';
-import { SearchType, MatchType } from '../libs/search.enum';
-import { SearchItem } from '../libs/search.item';
-import { OtmWord } from '../libs/otm';
+import { DictionaryManager } from '@/libs/dictionary.manager';
+import { SearchType, MatchType } from '@/libs/search.enum';
+import { SearchItem } from '@/libs/search.item';
+import { OtmWord } from '@/libs/otm';
 
 @Component({
     components: {

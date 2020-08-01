@@ -31,9 +31,9 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import { SearchType, MatchType } from '../libs/search.enum';
-import { SearchItem } from '../libs/search.item';
-import { DictionaryManager } from '../libs/dictionary.manager';
+import { SearchType, MatchType } from '@/libs/search.enum';
+import { SearchItem } from '@/libs/search.item';
+import { DictionaryManager } from '@/libs/dictionary.manager';
 
 @Component
 export default class Search extends Vue {
@@ -110,6 +110,10 @@ export default class Search extends Vue {
             if (value != null) {
                 const removeNames = this.dictionaryNames.splice(parseInt(value), 1);
                 if (removeNames.length > 0) {
+                    const index = this.searchItem.targetNames.indexOf(removeNames[0]);
+                    if (index !== -1) {
+                        this.searchItem.targetNames.splice(index, 1);
+                    }
                     this.dictionaries.remove(removeNames[0]);
                 }
             }
@@ -130,6 +134,8 @@ export default class Search extends Vue {
                         this.searchItem.targetNames.push(file.name);
                     }
                     this.dictionaries.set(file.name, dictionary);
+
+                    (event.target as HTMLInputElement).files = null;
                 });
                 reader.readAsText(file, "UTF-8");
             }
