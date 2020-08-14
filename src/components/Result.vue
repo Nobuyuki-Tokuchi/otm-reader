@@ -1,6 +1,6 @@
 <template lang="pug">
     .word-list
-        OtmResult.word(v-for="word in words", :word="word")
+        OtmResult.word(v-for="word in words", :word="word", :hiddenEmptyContents="hiddenEmptyContents")
 </template>
 
 <script lang="ts">
@@ -15,6 +15,7 @@ import { OtmWord } from '@/libs/otm';
 })
 export default class Result extends Vue {
     @Prop() private words!: OtmWord[];
+    @Prop() private hiddenEmptyContents!: boolean;
 
     constructor() {
         super();

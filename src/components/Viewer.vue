@@ -1,6 +1,6 @@
 <template lang="pug">
     .add-space
-        Search(@search-word="search", @search-script="searchScript", :dictionaries="dictionaries")
+        Search(@search-word="search", @search-script="searchScript", :dictionaries="dictionaries", v-model="hiddenEmptyContents")
         .flex.between
             .flex.grow
                 button(@click="firstPage") 最初へ
@@ -14,7 +14,7 @@
                 .px-10px
                     span 件数：
                     span {{ count }}
-        Result(:words="displayWords")
+        Result(:words="displayWords", :hiddenEmptyContents="hiddenEmptyContents")
         hr(v-if="count > 0")
         .flex.between(v-if="count > 0")
             .flex.grow
@@ -61,10 +61,12 @@ import { OtmWord } from '@/libs/otm';
 })
 export default class Viewer extends Vue {
     @Prop() private dictionaries!: DictionaryManager;
+
     private result: OtmWord[];
     private listingCount: number;
     private pageCount: number;
     private maxPageCount: number;
+    private hiddenEmptyContents: boolean;
 
     constructor() {
         super();
@@ -72,6 +74,7 @@ export default class Viewer extends Vue {
         this.listingCount = 16;
         this.pageCount = 1;
         this.maxPageCount = 1;
+        this.hiddenEmptyContents = false;
     }
 
     search(searchItem: SearchItem): void {
@@ -171,15 +174,6 @@ export default class Viewer extends Vue {
     button {
         margin-left: 5px;
         margin-right: 5px;
-    }
-}
-
-.flex {
-    > .between {
-        justify-content: space-between;
-    }
-    > .grow {
-        flex-grow: 1;
     }
 }
 </style>

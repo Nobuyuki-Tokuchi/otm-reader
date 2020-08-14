@@ -35,8 +35,18 @@ body {
 .flex {
     display: flex;
     box-sizing: border-box;
-    .half {
+    > .half {
         flex-basis: 50%;
+    }
+    > .stretch-space {
+        flex-grow: 1;
+        flex-shrink: 1;
+    }
+    > .between {
+        justify-content: space-between;
+    }
+    > .grow {
+        flex-grow: 1;
     }
 }
 button {

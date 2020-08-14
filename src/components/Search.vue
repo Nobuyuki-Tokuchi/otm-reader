@@ -4,6 +4,7 @@
             button.search-tab-btn(v-select="selected", data-value="1") 通常検索
             button.search-tab-btn(v-select="selected", data-value="2") OtmSearch検索
             button.search-tab-btn(v-select="selected", data-value="3") 辞書一覧
+            button.search-tab-btn(v-select="selected", data-value="4") オプション
         .search-contents
             .search-tab-content.search-panel(v-select="selected", data-value="1")
                 .flex
@@ -27,6 +28,10 @@
                             span.close(:data-key="index") &times;
                     div.half
                         input(type="file", multiple, @change="changeDictionaries")
+            .search-tab-content(v-select="selected", data-value="4")
+                .flex
+                    div 内容が存在しない項目は表示しない：
+                        input(type="checkbox", :checked="hiddenEmptyContents", @change="$emit('change', $event.target.checked)")
 </template>
 
 <script lang="ts">
@@ -35,9 +40,15 @@ import { SearchType, MatchType } from '@/libs/search.enum';
 import { SearchItem } from '@/libs/search.item';
 import { DictionaryManager } from '@/libs/dictionary.manager';
 
-@Component
+@Component({
+    model: {
+        prop: "checked",
+        event: "change"
+    },
+})
 export default class Search extends Vue {
     @Prop() private dictionaries!: DictionaryManager;
+    @Prop() private hiddenEmptyContents!: boolean;
 
     private readonly searchTypes: [SearchType, string][] = [
         [SearchType.WORD, "単語"],

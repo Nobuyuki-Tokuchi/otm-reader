@@ -2,29 +2,30 @@
     div
         .word-title.flex(:id="word.entry.id")
             label.word-name {{ word.entry.form }}
+            span.stretch-space
             span.word-tag(v-for="tag in word.tags") {{ tag }}
             span.dictionary-name {{ word.dictionaryName }}
         .word-verbose.flex
-            .word-translations.half
+            .word-translations.half(v-if="showTranslation")
                 .word-translation.title 訳語
                 .word-translation.flex(v-for="translation in word.translations")
                     .word-translation-title {{ translation.title }}
                     .word-translation-text
                         span.word-translation-form(v-for="form in translation.forms") {{ form }}
-            .word-contents.half
+            .word-contents.half(v-if="showContent")
                 .word-content.title 内容
                 .word-content.flex(v-for="content in word.contents")
-                    .word-content-title {{ content.title }}
+                    .word-content-title(v-if="content.title !== ''") {{ content.title }}
                     .word-content-text {{ content.text }}
-            .word-variations.half
+            .word-variations.half(v-if="showVariation")
                 .word-variation.title 変化形
                 .word-variation.flex(v-for="variation in word.variations")
-                    .word-variation-title {{ variation.title }}
+                    .word-variation-title(v-if="variation.title !== ''") {{ variation.title }}
                     .word-variation-text {{ variation.form }}
-            .word-relations.half
+            .word-relations.half(v-if="showRelation")
                 .word-relation.title 関連語
                 .word-relation.flex(v-for="relation in word.relations")
-                    .word-relation-title {{ relation.title }}
+                    .word-relation-title(v-if="relation.title !== ''") {{ relation.title }}
                     .word-relation-text {{ relation.entry.form }}
 </template>
 
@@ -32,9 +33,25 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { OtmWord } from '@/libs/otm';
 
-@Component
+@Component({
+    computed: {
+        showTranslation: function (): boolean {
+            return !(this.$props["hiddenEmptyContents"] as boolean) || (this.$props["word"] as OtmWord).translations.length > 0;
+        },
+        showContent: function (): boolean {
+            return !(this.$props["hiddenEmptyContents"] as boolean) || (this.$props["word"] as OtmWord).contents.length > 0;
+        },
+        showVariation: function (): boolean {
+            return !(this.$props["hiddenEmptyContents"] as boolean) || (this.$props["word"] as OtmWord).variations.length > 0;
+        },
+        showRelation: function (): boolean {
+            return !(this.$props["hiddenEmptyContents"] as boolean) || (this.$props["word"] as OtmWord).relations.length > 0;
+        },
+    }
+})
 export default class OtmResult extends Vue {
     @Prop() private word!: OtmWord;
+    @Prop() private hiddenEmptyContents!: boolean;
 
     constructor() {
         super();
@@ -70,11 +87,6 @@ $sub-color: white;
         margin-right: 2px;
         color: $main-color;
         background-color: $sub-color;
-    }
-
-    .dictionary-name {
-        flex-grow: 1;
-        text-align: right;
     }
 }
 
