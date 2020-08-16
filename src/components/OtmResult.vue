@@ -33,28 +33,29 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { OtmWord } from '@/libs/otm';
 
-@Component({
-    computed: {
-        showTranslation: function (): boolean {
-            return !(this.$props["hiddenEmptyContents"] as boolean) || (this.$props["word"] as OtmWord).translations.length > 0;
-        },
-        showContent: function (): boolean {
-            return !(this.$props["hiddenEmptyContents"] as boolean) || (this.$props["word"] as OtmWord).contents.length > 0;
-        },
-        showVariation: function (): boolean {
-            return !(this.$props["hiddenEmptyContents"] as boolean) || (this.$props["word"] as OtmWord).variations.length > 0;
-        },
-        showRelation: function (): boolean {
-            return !(this.$props["hiddenEmptyContents"] as boolean) || (this.$props["word"] as OtmWord).relations.length > 0;
-        },
-    }
-})
+@Component
 export default class OtmResult extends Vue {
     @Prop() private word!: OtmWord;
     @Prop() private hiddenEmptyContents!: boolean;
 
     constructor() {
         super();
+    }
+
+    public get showTranslation(): boolean {
+        return !this.hiddenEmptyContents || this.word.translations.length > 0;
+    }
+
+    public get showContent(): boolean {
+        return !this.hiddenEmptyContents || this.word.contents.length > 0;
+    }
+
+    public get showVariation(): boolean {
+        return !this.hiddenEmptyContents || this.word.variations.length > 0;
+    }
+
+    public get showRelation(): boolean {
+        return !this.hiddenEmptyContents || this.word.relations.length > 0;
     }
 }
 </script>

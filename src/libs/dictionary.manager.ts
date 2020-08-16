@@ -2,19 +2,23 @@ import { OtmDictionary, OtmWord } from './otm'
 import { SearchType, MatchType } from './search.enum'
 import { SearchItem } from './search.item';
 import OtmSearch from './otmsearch';
+import { BaseDictionary, BaseWord } from './dictionary';
+
+export type Dictionary = OtmDictionary & BaseDictionary;
+export type Word = OtmWord & BaseWord;
 
 export class DictionaryManager {
-    private dictionaries: Map<string, OtmDictionary>;
+    private dictionaries: Map<string, Dictionary>;
 
     constructor() {
-        this.dictionaries = new Map<string, OtmDictionary>()
+        this.dictionaries = new Map<string, Dictionary>()
     }
 
-    public set(name: string, dictionary: OtmDictionary): void {
+    public set(name: string, dictionary: Dictionary): void {
         this.dictionaries.set(name, dictionary)
     }
 
-    public get(name: string): OtmDictionary | undefined {
+    public get(name: string): Dictionary | undefined {
         return this.dictionaries.get(name)
     }
 
@@ -30,14 +34,14 @@ export class DictionaryManager {
         return Array.from(this.dictionaries.keys());
     }
 
-    public search(searchItem: SearchItem): OtmWord[] {
-        const words: OtmWord[] = [];
+    public search(searchItem: SearchItem): Word[] {
+        const words: Word[] = [];
         const matchFunc = DictionaryManager.matchFunction.get(searchItem.matchType) ?? (() => false);
 
         for (const name of searchItem.targetNames) {
             const dict = this.dictionaries.get(name);
             if (dict) {
-                let result: OtmWord[];
+                let result: Word[];
                 if ((searchItem.word === "" || searchItem.word == null) && (searchItem.matchType !== MatchType.EXACT && searchItem.matchType !== MatchType.NOT)) {
                     result = dict.words;
                 }
@@ -67,23 +71,26 @@ export class DictionaryManager {
                             break;
                     }
                 }
-                result.forEach(x => x.dictionaryName = name);
+                result.forEach(x => {
+                    x.dictionaryName = dict.dictionaryName;
+                    x.dictionaryType = dict.dictionaryType;
+                });
                 words.push(...result);
             }
         }
         return words;
     }
 
-    public searchScript(searchItem: SearchItem): OtmWord[] {
-        const words: OtmWord[] = [];
+    public searchScript(searchItem: SearchItem): Word[] {
+        const words: Word[] = [];
 
         try {
             const searchScript = new OtmSearch(searchItem.script);
-            const func = searchScript.compile() as (x: OtmWord) => boolean;
+            const func = searchScript.compile() as (x: Word) => boolean;
             for (const name of searchItem.targetNames) {
                 const dict = this.dictionaries.get(name);
                 if (dict) {
-                    const result = dict.words.filter(func);
+                    const result = (dict.words as Word[]).filter(func);
                     result.forEach(x => x.dictionaryName = name);
                     words.push(...result);
                 }

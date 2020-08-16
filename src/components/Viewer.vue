@@ -35,7 +35,7 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import Search from './Search.vue';
 import Result from "./Result.vue";
-import { DictionaryManager } from '@/libs/dictionary.manager';
+import { DictionaryManager, Word } from '@/libs/dictionary.manager';
 import { SearchType, MatchType } from '@/libs/search.enum';
 import { SearchItem } from '@/libs/search.item';
 import { OtmWord } from '@/libs/otm';
@@ -45,24 +45,11 @@ import { OtmWord } from '@/libs/otm';
          Search,
          Result
     },
-    computed: {
-        count: function (): number {
-            return this.$data["result"].length;
-        },
-        displayWords: function (): OtmWord[] {
-            const pageCount = this.$data["pageCount"] as number;
-            const listingCount = this.$data["listingCount"] as number;
-            const start = (pageCount - 1) * listingCount;
-            const end = start + listingCount;
-
-            return this.$data["result"].filter((x: OtmWord, index: number) => index >= start && index < end);
-        }
-    }
 })
 export default class Viewer extends Vue {
     @Prop() private dictionaries!: DictionaryManager;
 
-    private result: OtmWord[];
+    private result: Word[];
     private listingCount: number;
     private pageCount: number;
     private maxPageCount: number;
@@ -75,6 +62,19 @@ export default class Viewer extends Vue {
         this.pageCount = 1;
         this.maxPageCount = 1;
         this.hiddenEmptyContents = false;
+    }
+    
+    public get count(): number {
+        return this.result.length;
+    }
+
+    public get displayWords (): Word[] {
+        const pageCount = this.pageCount;
+        const listingCount = this.listingCount;
+        const start = (pageCount - 1) * listingCount;
+        const end = start + listingCount;
+
+        return this.result.filter((x: Word, index: number) => index >= start && index < end);
     }
 
     search(searchItem: SearchItem): void {

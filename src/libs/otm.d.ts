@@ -3,7 +3,6 @@ export interface OtmDictionary {
 }
 
 export interface OtmWord {
-    dictionaryName?: string;
     entry: OtmEntry;
     translations: OtmTranslation[];
     tags: string[];

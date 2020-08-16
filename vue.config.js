@@ -1,4 +1,4 @@
 module.exports = {
-    publicPath: process.env.NODE_ENV === "production" ? "/otm-reader/" : "/",
+    publicPath: process.env.NODE_ENV === "production" ? "./" : "/",
     outputDir: "otm-reader",
 };

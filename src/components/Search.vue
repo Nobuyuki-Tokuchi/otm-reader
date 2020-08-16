@@ -38,7 +38,8 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { SearchType, MatchType } from '@/libs/search.enum';
 import { SearchItem } from '@/libs/search.item';
-import { DictionaryManager } from '@/libs/dictionary.manager';
+import { DictionaryManager, Dictionary } from '@/libs/dictionary.manager';
+import { OtmDictionary } from '@/libs/otm';
 
 @Component({
     model: {
@@ -138,7 +139,8 @@ export default class Search extends Vue {
             for (const file of files) {
                 const reader = new FileReader();
                 reader.addEventListener("load", () => {
-                    const dictionary = JSON.parse(reader.result as string);
+                    const dictionary = JSON.parse(reader.result as string) as Dictionary;
+                    dictionary.dictionaryType = "otm";
 
                     if (!this.dictionaryNames.includes(file.name)) {
                         this.dictionaryNames.push(file.name);

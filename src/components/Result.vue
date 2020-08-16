@@ -7,6 +7,7 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import OtmResult from "./OtmResult.vue";
 import { OtmWord } from '@/libs/otm';
+import { Word } from '@/libs/dictionary.manager';
 
 @Component({
     components: {
@@ -14,7 +15,7 @@ import { OtmWord } from '@/libs/otm';
     }
 })
 export default class Result extends Vue {
-    @Prop() private words!: OtmWord[];
+    @Prop() private words!: Word[];
     @Prop() private hiddenEmptyContents!: boolean;
 
     constructor() {
