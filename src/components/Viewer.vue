@@ -36,9 +36,9 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 import Search from './Search.vue';
 import Result from "./Result.vue";
 import { DictionaryManager, Word } from '@/libs/dictionary.manager';
-import { SearchType, MatchType } from '@/libs/search.enum';
 import { SearchItem } from '@/libs/search.item';
-import { OtmWord } from '@/libs/otm';
+import { PDicWord } from '@/libs/dictionary/pdic';
+import { OtmWord } from '@/libs/dictionary/otm';
 
 @Component({
     components: {
@@ -79,10 +79,12 @@ export default class Viewer extends Vue {
 
     search(searchItem: SearchItem): void {
         this.result = this.dictionaries.search(searchItem).sort((x, y) => {
-            if (x.entry.form < y.entry.form) {
+            const xWord = Viewer.getWord(x);
+            const yWord = Viewer.getWord(y);
+            if (xWord < yWord) {
                 return -1;
             }
-            else if (x.entry.form > y.entry.form) {
+            else if (xWord > yWord) {
                 return 1;
             }
             else {
@@ -95,10 +97,12 @@ export default class Viewer extends Vue {
 
     searchScript(searchItem: SearchItem): void {
         this.result = this.dictionaries.searchScript(searchItem).sort((x, y) => {
-            if (x.entry.form < y.entry.form) {
+            const xWord = Viewer.getWord(x);
+            const yWord = Viewer.getWord(y);
+            if (xWord < yWord) {
                 return -1;
             }
-            else if (x.entry.form > y.entry.form) {
+            else if (xWord > yWord) {
                 return 1;
             }
             else {
@@ -107,6 +111,15 @@ export default class Viewer extends Vue {
         });
         this.maxPageCount = Math.ceil(this.result.length / this.listingCount);
         this.firstPage();
+    }
+
+    private static getWord(x: Word): string {
+        if (x.dictionaryType === "pdic") {
+            return (x as PDicWord).word;
+        }
+        else {
+            return (x as OtmWord).entry.form;
+        }
     }
 
     firstPage(): void {

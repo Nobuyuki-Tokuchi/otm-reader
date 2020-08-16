@@ -31,7 +31,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import { OtmWord } from '@/libs/otm';
+import { OtmWord } from '@/libs/dictionary/otm';
 
 @Component
 export default class OtmResult extends Vue {

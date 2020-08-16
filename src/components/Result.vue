@@ -1,17 +1,20 @@
 <template lang="pug">
     .word-list
-        OtmResult.word(v-for="word in words", :word="word", :hiddenEmptyContents="hiddenEmptyContents")
+        .word(v-for="word in words")
+            OtmResult(v-if="word.dictionaryType === 'otm'", :word="word", :hiddenEmptyContents="hiddenEmptyContents")
+            PDicResult(v-else-if="word.dictionaryType === 'pdic'", :word="word", :hiddenEmptyContents="hiddenEmptyContents")
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import OtmResult from "./OtmResult.vue";
-import { OtmWord } from '@/libs/otm';
 import { Word } from '@/libs/dictionary.manager';
+import OtmResult from "./OtmResult.vue";
+import PDicResult from "./PDicResult.vue";
 
 @Component({
     components: {
-        OtmResult
+        OtmResult,
+        PDicResult,
     }
 })
 export default class Result extends Vue {

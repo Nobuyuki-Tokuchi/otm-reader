@@ -159,8 +159,8 @@ export class MatchingOperatorNode implements OperatorNode {
         this.node = null;
     }
 
-    public get operator() {
-        return MatchingOperatorNode.MatchingValue.get(this.matchType)!;
+    public get operator(): string {
+        return MatchingOperatorNode.MatchingValue.get(this.matchType) ?? "";
     }
 
     public set operator(value: string) {

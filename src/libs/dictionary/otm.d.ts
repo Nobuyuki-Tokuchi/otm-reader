@@ -1,8 +1,10 @@
-export interface OtmDictionary {
+import { BaseDictionary, BaseWord } from "./dictionary";
+
+export interface OtmDictionary extends BaseDictionary {
     words: OtmWord[];
 }
 
-export interface OtmWord {
+export interface OtmWord extends BaseWord {
     entry: OtmEntry;
     translations: OtmTranslation[];
     tags: string[];

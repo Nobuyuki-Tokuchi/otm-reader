@@ -39,7 +39,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 import { SearchType, MatchType } from '@/libs/search.enum';
 import { SearchItem } from '@/libs/search.item';
 import { DictionaryManager, Dictionary } from '@/libs/dictionary.manager';
-import { OtmDictionary } from '@/libs/otm';
+import { PDicReader } from '@/libs/dictionary/pdic';
 
 @Component({
     model: {
@@ -137,21 +137,57 @@ export default class Search extends Vue {
 
         if (files) {
             for (const file of files) {
-                const reader = new FileReader();
-                reader.addEventListener("load", () => {
-                    const dictionary = JSON.parse(reader.result as string) as Dictionary;
-                    dictionary.dictionaryType = "otm";
+                const filename = file.name;
 
-                    if (!this.dictionaryNames.includes(file.name)) {
-                        this.dictionaryNames.push(file.name);
-                        this.searchItem.targetNames.push(file.name);
-                    }
-                    this.dictionaries.set(file.name, dictionary);
+                if (filename.endsWith(".json")) {
+                    file.text().then(result => {
+                        const dictionary = JSON.parse(result as string) as Dictionary;
+                        dictionary.dictionaryName = filename;
+                        dictionary.dictionaryType = "otm";
 
-                    (event.target as HTMLInputElement).files = null;
-                });
-                reader.readAsText(file, "UTF-8");
+                        if (!this.dictionaryNames.includes(filename)) {
+                            this.dictionaryNames.push(filename);
+                            this.searchItem.targetNames.push(filename);
+                        }
+                        this.dictionaries.set(filename, dictionary);
+                    }).catch(reason => {
+                        console.log(reason);
+                    });
+                }
+                else if (filename.endsWith(".csv")) {
+                    const blob = file.arrayBuffer().then(result => {
+                        const typeArray = new Uint8Array(result);
+                        const reader = new FileReader();
+
+                        reader.onload = () => {
+                            const dictionary = PDicReader.parseCsv(reader.result as string);
+                            dictionary.dictionaryName = filename;
+                            dictionary.dictionaryType = "pdic";
+
+                            if (!this.dictionaryNames.includes(filename)) {
+                                this.dictionaryNames.push(filename);
+                                this.searchItem.targetNames.push(filename);
+                            }
+                            this.dictionaries.set(filename, dictionary);
+                        }
+
+                        if(typeArray[0] === 0xFF && typeArray[1] === 0xFE) {
+                            reader.readAsText(file, "UTF-16LE");
+                        }
+                        else if (typeArray[0] === 0xFE && typeArray[1] === 0xFF) {
+                            reader.readAsText(file, "UTF-16BE");
+                        }
+                        else if (typeArray[0] === 0xEF && typeArray[1] === 0xBB && typeArray[2] === 0xBF) {
+                            reader.readAsText(file.slice(3), "UTF-8");
+                        }
+                        else {
+                            reader.readAsText(file, "UTF-8");
+                        }
+                    });
+                }
             }
+
+            (event.target as HTMLInputElement).files = null;
         }
     }
 }
