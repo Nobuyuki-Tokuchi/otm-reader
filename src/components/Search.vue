@@ -155,7 +155,7 @@ export default class Search extends Vue {
                     });
                 }
                 else if (filename.endsWith(".csv")) {
-                    const blob = file.arrayBuffer().then(result => {
+                    file.arrayBuffer().then(result => {
                         const typeArray = new Uint8Array(result);
                         const reader = new FileReader();
 
