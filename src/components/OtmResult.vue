@@ -14,9 +14,10 @@
                         span.word-translation-form(v-for="form in translation.forms") {{ form }}
             .word-contents.half(v-if="showContent")
                 .word-content.title 内容
-                .word-content.flex(v-for="content in word.contents")
+                .word-content.flex(v-for="content in contents")
                     .word-content-title(v-if="content.title !== ''") {{ content.title }}
-                    .word-content-text {{ content.text }}
+                    .word-content-text
+                        div(v-for="text in content.textList") {{ text }}
             .word-variations.half(v-if="showVariation")
                 .word-variation.title 変化形
                 .word-variation.flex(v-for="variation in word.variations")
@@ -40,6 +41,15 @@ export default class OtmResult extends Vue {
 
     constructor() {
         super();
+    }
+
+    public get contents(): { title: string; textList: string[] }[] {
+        return this.word.contents.map(x => {
+            return {
+                title: x.title,
+                textList: x.text.split("\n")
+            };
+        });
     }
 
     public get showTranslation(): boolean {

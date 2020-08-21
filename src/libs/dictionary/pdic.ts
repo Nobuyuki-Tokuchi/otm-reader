@@ -51,21 +51,21 @@ export class PDicReader {
             const word = new PDicWord();
 
             while (next < csv.length && csv[next + 1] === QUOTE) {
-                next = csv.indexOf(QUOTE, next + 1);
+                next = csv.indexOf(QUOTE, next + 2);
             }
             word.word = csv.substring(index, next);
             
             index = next + 3;
             next = csv.indexOf(QUOTE, index);
             while (next < csv.length && csv[next + 1] === QUOTE) {
-                next = csv.indexOf(QUOTE, next + 1);
+                next = csv.indexOf(QUOTE, next + 2);
             }
             word.trans = csv.substring(index, next);
 
             index = next + 3;
             next = csv.indexOf(QUOTE, index);
             while (next < csv.length && csv[next + 1] === QUOTE) {
-                next = csv.indexOf(QUOTE, next + 1);
+                next = csv.indexOf(QUOTE, next + 2);
             }
             word.exp = csv.substring(index, next);
 

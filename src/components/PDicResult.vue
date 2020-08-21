@@ -7,10 +7,12 @@
         .word-verbose.flex
             .word-trans-area.half(v-if="showTrans")
                 .word-trans.title 訳語
-                .word-trans.text {{ word.trans }}
+                .word-trans.text
+                    div(v-for="trans in transList") {{ trans }}
             .word-exp-area.half(v-if="showExp")
                 .word-exp.title 内容
-                .word-exp.text {{ word.exp }}
+                .word-exp.text
+                    div(v-for="exp in expList") {{ exp }}
             .word-pron-area.half(v-if="showPron")
                 .word-pron.title 発音
                 .word-pron.text {{ word.pron }}
@@ -27,6 +29,14 @@ export default class PDicResult extends Vue {
 
     constructor() {
         super();
+    }
+
+    public get transList(): string[] {
+        return this.word.trans.replaceAll("\r\n", "\n").split("\n");
+    }
+
+    public get expList(): string[] {
+        return this.word.exp.replaceAll("\r\n", "\n").split("\n");
     }
 
     public get showTrans(): boolean {
