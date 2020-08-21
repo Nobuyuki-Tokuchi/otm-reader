@@ -36,8 +36,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import { SearchType, MatchType } from '@/libs/search.enum';
-import { SearchItem } from '@/libs/search.item';
+import { SearchItem, SearchType, MatchType } from '@/libs/search.item';
 import { DictionaryManager, Dictionary } from '@/libs/dictionary.manager';
 import { PDicReader } from '@/libs/dictionary/pdic';
 

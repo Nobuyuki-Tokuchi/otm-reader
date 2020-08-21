@@ -1,12 +1,12 @@
 import { OtmDictionary, OtmWord } from './dictionary/otm'
-import { SearchType, MatchType } from './search.enum'
-import { SearchItem } from './search.item';
+import { SearchItem, SearchFunction, MatchType } from './search.item';
 import OtmSearch from './otmsearch/otmsearch';
 import { PersonalDictionary, PDicWord } from './dictionary/pdic';
+import OtmSearcher from './searcher/otmsearcher';
+import PDicSearcher from './searcher/pdicsearcher';
 
 export type Dictionary = OtmDictionary | PersonalDictionary;
 export type Word = OtmWord | PDicWord;
-type SearchFunction = (target: string | string[], word: string) => boolean;
 
 export class DictionaryManager {
     private dictionaries: Map<string, Dictionary>;
@@ -50,75 +50,23 @@ export class DictionaryManager {
                 if ((searchItem.word === "" || searchItem.word == null) && (searchItem.matchType !== MatchType.EXACT && searchItem.matchType !== MatchType.NOT)) {
                     result = dict.words;
                 }
-                else if (dict.dictionaryType === "pdic") {
-                    result = this.searchPdic(dict as PersonalDictionary, searchItem, matchFunc);
-                }
                 else {
-                    result = this.searchOtm(dict as OtmDictionary, searchItem, matchFunc);
+                    switch (dict.dictionaryType) {
+                        case "pdic":
+                            result = PDicSearcher.search(dict as PersonalDictionary, searchItem, matchFunc);
+                            break;
+                        case "otm":
+                            result = OtmSearcher.search(dict as OtmDictionary, searchItem, matchFunc);
+                            break;
+                        default:
+                            result = OtmSearcher.search(dict as OtmDictionary, searchItem, matchFunc);
+                            break;
+                    }
                 }
                 words.push(...result);
             }
         }
         return words;
-    }
-
-    private searchOtm(dict: OtmDictionary, searchItem: SearchItem, matchFunc: SearchFunction): Word[] {
-        let result: OtmWord[]; 
-        switch (searchItem.searchType) {
-            case SearchType.WORD:
-                result = dict.words.filter(x => matchFunc(x.entry.form, searchItem.word));
-                break;
-            case SearchType.TRANSLATION:
-                result = dict.words.filter(x => x.translations.some(y => matchFunc(y.forms, searchItem.word)));
-                break;
-            case SearchType.TAG:
-                result = dict.words.filter(x => matchFunc(x.tags, searchItem.word));
-                break;
-            case SearchType.TRANSLATION_TITLE:
-                result = dict.words.filter(x => x.translations.some(y => matchFunc(y.title, searchItem.word)));
-                break;
-            case SearchType.VARIATION_TITLE:
-                result = dict.words.filter(x => x.variations.some(y => matchFunc(y.title, searchItem.word)));
-                break;
-            case SearchType.ALL:
-            default:
-                result = dict.words.filter(x => matchFunc(x.entry.form, searchItem.word)
-                    || x.translations.some(y => matchFunc(y.forms, searchItem.word) || matchFunc(y.title, searchItem.word))
-                    || matchFunc(x.tags, searchItem.word)
-                    || x.variations.some(y => matchFunc(y.title, searchItem.word)))
-                break;
-        }
-
-        return result;
-    }
-
-    private searchPdic(dict: PersonalDictionary, searchItem: SearchItem, matchFunc: SearchFunction): Word[] {
-        let result: PDicWord[]; 
-        switch (searchItem.searchType) {
-            case SearchType.WORD:
-                result = dict.words.filter(x => matchFunc(x.word, searchItem.word));
-                break;
-            case SearchType.TRANSLATION:
-                result = dict.words.filter(x => matchFunc(x.trans, searchItem.word));
-                break;
-            case SearchType.TAG:
-                result = [];
-                break;
-            case SearchType.TRANSLATION_TITLE:
-                result = [];
-                break;
-            case SearchType.VARIATION_TITLE:
-                result = [];
-                break;
-            case SearchType.ALL:
-            default:
-                result = dict.words.filter(x => matchFunc(x.word, searchItem.word)
-                    || matchFunc(x.trans, searchItem.word)
-                    || matchFunc(x.exp, searchItem.word));
-                break;
-        }
-
-        return result;
     }
 
     public searchScript(searchItem: SearchItem): Word[] {
