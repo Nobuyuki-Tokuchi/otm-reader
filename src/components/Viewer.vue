@@ -35,10 +35,11 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import Search from './Search.vue';
 import Result from "./Result.vue";
-import { DictionaryManager, Word } from '@/libs/dictionary.manager';
+import { DictionaryManager } from '@/libs/dictionary.manager';
 import { SearchItem } from '@/libs/search.item';
 import { PDicWord } from '@/libs/dictionary/pdic';
 import { OtmWord } from '@/libs/dictionary/otm';
+import { BaseWord } from '@/libs/dictionary/dictionary';
 
 @Component({
     components: {
@@ -49,7 +50,7 @@ import { OtmWord } from '@/libs/dictionary/otm';
 export default class Viewer extends Vue {
     @Prop() private dictionaries!: DictionaryManager;
 
-    private result: Word[];
+    private result: BaseWord[];
     private listingCount: number;
     private pageCount: number;
     private maxPageCount: number;
@@ -68,13 +69,13 @@ export default class Viewer extends Vue {
         return this.result.length;
     }
 
-    public get displayWords (): Word[] {
+    public get displayWords (): BaseWord[] {
         const pageCount = this.pageCount;
         const listingCount = this.listingCount;
         const start = (pageCount - 1) * listingCount;
         const end = start + listingCount;
 
-        return this.result.filter((x: Word, index: number) => index >= start && index < end);
+        return this.result.filter((x: BaseWord, index: number) => index >= start && index < end);
     }
 
     search(searchItem: SearchItem): void {
@@ -113,7 +114,7 @@ export default class Viewer extends Vue {
         this.firstPage();
     }
 
-    private static getWord(x: Word): string {
+    private static getWord(x: BaseWord): string {
         if (x.dictionaryType === "pdic") {
             return (x as PDicWord).word;
         }

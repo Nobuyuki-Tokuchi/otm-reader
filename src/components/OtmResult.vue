@@ -106,7 +106,6 @@ $sub-color: white;
 
     .half {
         box-sizing: border-box;
-        flex-basis: 50%;
         flex-shrink: 0;
         flex-grow: 0;
     }

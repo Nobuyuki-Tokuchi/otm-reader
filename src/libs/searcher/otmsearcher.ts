@@ -23,8 +23,9 @@ export default class OtmSearcher {
             case SearchType.ALL:
             default:
                 result = dict.words.filter(x => matchFunc(x.entry.form, searchItem.word)
-                    || x.translations.some(y => matchFunc(y.forms, searchItem.word) || matchFunc(y.title, searchItem.word))
+                    || x.translations.some(y => matchFunc(y.forms, searchItem.word))
                     || matchFunc(x.tags, searchItem.word)
+                    || x.contents.some(y => matchFunc(y.text, searchItem.word))
                     || x.variations.some(y => matchFunc(y.title, searchItem.word)))
                 break;
         }

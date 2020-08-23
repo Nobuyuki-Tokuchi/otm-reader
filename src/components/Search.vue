@@ -27,7 +27,7 @@
                             span {{ name }}
                             span.close(:data-key="index") &times;
                     div.half
-                        input(type="file", multiple, @change="changeDictionaries")
+                        input(type="file", multiple, @change="addDictionaries")
             .search-tab-content(v-select="selected", data-value="4")
                 .flex
                     div 内容が存在しない項目は表示しない：
@@ -37,8 +37,11 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { SearchItem, SearchType, MatchType } from '@/libs/search.item';
-import { DictionaryManager, Dictionary } from '@/libs/dictionary.manager';
+import { DictionaryManager } from '@/libs/dictionary.manager';
 import { PDicReader } from '@/libs/dictionary/pdic';
+import { BaseDictionary } from '@/libs/dictionary/dictionary';
+import { TnnDictionary } from '@/libs/dictionary/tnn';
+import TnnSearcher from '@/libs/searcher/tnnsearcher';
 
 @Component({
     model: {
@@ -131,7 +134,7 @@ export default class Search extends Vue {
         }
     }
 
-    changeDictionaries(event: Event): void {
+    addDictionaries(event: Event): void {
         const files = (event.target as HTMLInputElement).files;
 
         if (files) {
@@ -140,9 +143,16 @@ export default class Search extends Vue {
 
                 if (filename.endsWith(".json")) {
                     file.text().then(result => {
-                        const dictionary = JSON.parse(result as string) as Dictionary;
+                        let dictionary = JSON.parse(result as string) as BaseDictionary;
                         dictionary.dictionaryName = filename;
-                        dictionary.dictionaryType = "otm";
+
+                        if ((dictionary as TnnDictionary).dictionary?.type?.toLowerCase() === "tnn") {
+                            dictionary.dictionaryType = "tnn";
+                            dictionary = TnnSearcher.recreate(dictionary as TnnDictionary);
+                        }
+                        else {
+                            dictionary.dictionaryType = "otm";
+                        }
 
                         if (!this.dictionaryNames.includes(filename)) {
                             this.dictionaryNames.push(filename);
@@ -168,7 +178,7 @@ export default class Search extends Vue {
                                 this.searchItem.targetNames.push(filename);
                             }
                             this.dictionaries.set(filename, dictionary);
-                        }
+                        };
 
                         if(typeArray[0] === 0xFF && typeArray[1] === 0xFE) {
                             reader.readAsText(file, "UTF-16LE");
@@ -182,6 +192,8 @@ export default class Search extends Vue {
                         else {
                             reader.readAsText(file, "UTF-8");
                         }
+                    }).catch(reason => {
+                        console.log(reason);
                     });
                 }
             }

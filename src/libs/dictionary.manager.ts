@@ -1,21 +1,21 @@
-import { OtmDictionary, OtmWord } from './dictionary/otm'
+import { OtmDictionary } from './dictionary/otm'
 import { SearchItem, SearchFunction, MatchType } from './search.item';
 import OtmSearch from './otmsearch/otmsearch';
-import { PersonalDictionary, PDicWord } from './dictionary/pdic';
+import { PersonalDictionary } from './dictionary/pdic';
 import OtmSearcher from './searcher/otmsearcher';
 import PDicSearcher from './searcher/pdicsearcher';
-
-export type Dictionary = OtmDictionary | PersonalDictionary;
-export type Word = OtmWord | PDicWord;
+import { BaseDictionary, BaseWord } from './dictionary/dictionary';
+import TnnSearcher from './searcher/tnnsearcher';
+import { TnnDictionary } from './dictionary/tnn';
 
 export class DictionaryManager {
-    private dictionaries: Map<string, Dictionary>;
+    private dictionaries: Map<string, BaseDictionary>;
 
     constructor() {
-        this.dictionaries = new Map<string, Dictionary>()
+        this.dictionaries = new Map<string, BaseDictionary>()
     }
 
-    public set(name: string, dictionary: Dictionary): void {
+    public set(name: string, dictionary: BaseDictionary): void {
         for (const word of dictionary.words) {
             word.dictionaryName = dictionary.dictionaryName;
             word.dictionaryType = dictionary.dictionaryType;
@@ -23,7 +23,7 @@ export class DictionaryManager {
         this.dictionaries.set(name, dictionary)
     }
 
-    public get(name: string): Dictionary | undefined {
+    public get(name: string): BaseDictionary | undefined {
         return this.dictionaries.get(name)
     }
 
@@ -39,14 +39,14 @@ export class DictionaryManager {
         return Array.from(this.dictionaries.keys());
     }
 
-    public search(searchItem: SearchItem): Word[] {
-        const words: Word[] = [];
+    public search(searchItem: SearchItem): BaseWord[] {
+        const words: BaseWord[] = [];
         const matchFunc = DictionaryManager.matchFunction.get(searchItem.matchType) ?? (() => false);
 
         for (const name of searchItem.targetNames) {
             const dict = this.dictionaries.get(name);
             if (dict) {
-                let result: Word[];
+                let result: BaseWord[];
                 if ((searchItem.word === "" || searchItem.word == null) && (searchItem.matchType !== MatchType.EXACT && searchItem.matchType !== MatchType.NOT)) {
                     result = dict.words;
                 }
@@ -57,6 +57,9 @@ export class DictionaryManager {
                             break;
                         case "otm":
                             result = OtmSearcher.search(dict as OtmDictionary, searchItem, matchFunc);
+                            break;
+                        case "tnn":
+                            result = TnnSearcher.search(dict as TnnDictionary, searchItem, matchFunc);
                             break;
                         default:
                             result = OtmSearcher.search(dict as OtmDictionary, searchItem, matchFunc);
@@ -69,16 +72,16 @@ export class DictionaryManager {
         return words;
     }
 
-    public searchScript(searchItem: SearchItem): Word[] {
-        const words: Word[] = [];
+    public searchScript(searchItem: SearchItem): BaseWord[] {
+        const words: BaseWord[] = [];
 
         try {
             const searchScript = new OtmSearch(searchItem.script);
-            const func = searchScript.compile() as (x: Word) => boolean;
+            const func = searchScript.compile() as (x: BaseWord) => boolean;
             for (const name of searchItem.targetNames) {
                 const dict = this.dictionaries.get(name);
                 if (dict) {
-                    const result = (dict.words as Word[]).filter(func);
+                    const result = (dict.words as BaseWord[]).filter(func);
                     result.forEach(x => x.dictionaryName = name);
                     words.push(...result);
                 }
