@@ -1,12 +1,10 @@
-export interface TnnDictionary {
-    dictionaryName?: string;
-    words: TnnWord[];
+import { BaseDictionary, BaseWord } from "./dictionary";
+
+export interface TnnDictionary extends BaseDictionary<TnnWord> {
     dictionary: TnnDictionarySetting;
 }
 
-export interface TnnWord {
-    dictionaryName?: string;
-    dictionaryType?: string;
+export interface TnnWord extends BaseWord {
     entry: TnnEntry;
     contents: TnnContent[];
 }

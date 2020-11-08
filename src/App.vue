@@ -1,26 +1,66 @@
 <template lang="pug">
     #app
-        Viewer(v-bind:dictionaries="dictionaries")
+        .top-bar
+            Search.search-main(@search-word="search", @search-script="searchScript", :updateWord="updateWord")
+            Pager.pager-main(v-model="pageCount", :count="count", :listingCount="listingCount")
+        Viewer.view-area(:result="result", :updateWord="updateWord", v-model="pageCount", :listingCount="listingCount")
+        Sidebar
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+import Search from './components/Search.vue';
+import Pager from "./components/Pager.vue";
 import Viewer from './components/Viewer.vue';
-import { DictionaryManager } from './libs/dictionary.manager';
+import Sidebar from './components/Sidebar.vue';
+import { BaseWord } from './libs/dictionary/dictionary';
+import { getModule } from 'vuex-module-decorators';
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/theme/rubyblue.css';
+import DictionaryStore from './store/modules/dictionary.store';
+import { SearchItem } from './libs/search.item';
 
 @Component({
     components: {
-        Viewer
+        Search,
+        Pager,
+        Viewer,
+        Sidebar,
     },
 })
 export default class App extends Vue {
-    private dictionaries: DictionaryManager;
+    private originalWord: BaseWord | null;
+    private result: BaseWord[];
+    private listingCount: number;
+    private pageCount: number;
 
     constructor () {
         super();
 
-        this.dictionaries = new DictionaryManager();
+        this.originalWord = null;
+        this.result = [];
+        this.listingCount = 16;
+        this.pageCount = 1;
     }
+    
+    public get count(): number {
+        return this.result.length;
+    }
+
+    updateWord(word?: BaseWord) {
+        this.originalWord = word ?? null;
+    }
+    
+    search(searchItem: SearchItem): void {
+        const instance = getModule(DictionaryStore, this.$store);
+        this.result = instance.search(searchItem);
+    }
+
+    searchScript(searchItem: SearchItem): void {
+        const instance = getModule(DictionaryStore, this.$store);
+        this.result = instance.searchScript(searchItem);
+    }
+
 }
 </script>
 
@@ -65,11 +105,35 @@ button {
     margin-top: 10px;
     margin-bottom: 10px;
     margin-left: 10px;
-    margin-right: 10px;
+    margin-right: 25px;
 }
 .close {
     font-weight: bold;
     padding: 2px;
     cursor: pointer;
+}
+.none {
+    display: none;
+}
+
+$search-main-height: 65px;
+$pager-main-height: 45px;
+.top-bar {
+    position: fixed;
+    width: calc(100% - 35px);
+    background-color: white;
+
+    .search-main {
+        height: $search-main-height;
+    }
+
+    .pager-main {
+        border: 1px solid black;
+        padding: 5px;
+        height: $pager-main-height;
+    }
+}
+.view-area {
+    padding-top: $search-main-height + $pager-main-height + 5px;
 }
 </style>

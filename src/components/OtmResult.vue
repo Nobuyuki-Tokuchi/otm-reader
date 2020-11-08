@@ -33,11 +33,13 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { OtmWord } from '@/libs/dictionary/otm';
+import { BaseWord } from '@/libs/dictionary/dictionary';
 
 @Component
 export default class OtmResult extends Vue {
     @Prop() private word!: OtmWord;
     @Prop() private hiddenEmptyContents!: boolean;
+    @Prop() private updateWord!: (word: BaseWord) => void;
 
     constructor() {
         super();
@@ -66,6 +68,10 @@ export default class OtmResult extends Vue {
 
     public get showRelation(): boolean {
         return !this.hiddenEmptyContents || this.word.relations.length > 0;
+    }
+
+    public editWord() {
+        this.updateWord(this.word);
     }
 }
 </script>

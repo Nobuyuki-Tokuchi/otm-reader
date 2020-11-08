@@ -1,9 +1,11 @@
 <template lang="pug">
     .word-list
         .word(v-for="word in words")
-            OtmResult(v-if="word.dictionaryType === 'otm'", :word="word", :hiddenEmptyContents="hiddenEmptyContents")
-            PDicResult(v-else-if="word.dictionaryType === 'pdic'", :word="word", :hiddenEmptyContents="hiddenEmptyContents")
-            TnnResult(v-else-if="word.dictionaryType === 'tnn'", :word="word", :hiddenEmptyContents="hiddenEmptyContents")
+            OtmResult(v-if="word.dictionaryType === 'otm'", :word="word", :hiddenEmptyContents="hiddenEmptyContents", :updateWord="updateWord")
+            NtdicResult(v-else-if="word.dictionaryType === 'ntdic'", :word="word", :hiddenEmptyContents="hiddenEmptyContents", :updateWord="updateWord")
+            PDicResult(v-else-if="word.dictionaryType === 'pdic'", :word="word", :hiddenEmptyContents="hiddenEmptyContents", :updateWord="updateWord")
+            TnnResult(v-else-if="word.dictionaryType === 'tnn'", :word="word", :hiddenEmptyContents="hiddenEmptyContents", :updateWord="updateWord")
+            div(v-else) 何かミスってる
 </template>
 
 <script lang="ts">
@@ -12,20 +14,29 @@ import { BaseWord } from '@/libs/dictionary/dictionary';
 import OtmResult from "./OtmResult.vue";
 import PDicResult from "./PDicResult.vue";
 import TnnResult from "./TnnResult.vue";
+import NtdicResult from "./NtdicResult.vue";
+import DisplayStore from '@/store/modules/display.store';
+import { getModule } from 'vuex-module-decorators';
 
 @Component({
     components: {
         OtmResult,
         PDicResult,
         TnnResult,
+        NtdicResult,
     }
 })
 export default class Result extends Vue {
     @Prop() private words!: BaseWord[];
-    @Prop() private hiddenEmptyContents!: boolean;
+    @Prop() private updateWord!: (word: BaseWord) => void;
 
     constructor() {
         super();
+    }
+
+    get hiddenEmptyContents(): boolean {
+        const instance = getModule(DisplayStore, this.$store);
+        return instance.hiddenEmptyContent;
     }
 }
 

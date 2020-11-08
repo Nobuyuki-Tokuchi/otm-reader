@@ -1,58 +1,35 @@
 <template lang="pug">
-    .search
-        .search-tab.flex(@click="changeSelected")
-            button.search-tab-btn(v-select="selected", data-value="1") 通常検索
-            button.search-tab-btn(v-select="selected", data-value="2") OtmSearch検索
-            button.search-tab-btn(v-select="selected", data-value="3") 辞書一覧
-            button.search-tab-btn(v-select="selected", data-value="4") オプション
-        .search-contents
-            .search-tab-content.search-panel(v-select="selected", data-value="1")
-                .flex
-                    label 検索文字列
-                    input(type="text", v-model="searchItem.word", @keydown="searchWhenEnter")
-                    select(v-model="searchItem.searchType")
-                        option(v-for="type in searchTypes", :value="type[0]") {{ type[1] }}
-                    select(v-model="searchItem.matchType")
-                        option(v-for="type in matchTypes", :value="type[0]") {{ type[1] }}
-                    button(@click="$emit('search-word', searchItem)") 検索
-            .search-tab-content(v-select="selected", data-value="2")
-                .flex
-                    textarea.script(rows="5", v-model="searchItem.script", @keydown="searchWhenEnter")
-                    button(@click="$emit('search-script', searchItem)") 検索
-            .search-tab-content.dictionary-list(v-select="selected", data-value="3")
-                .flex
-                    ul.half(@click="removeDictionary")
-                        li.no-mark(v-for="(name, index) in dictionaryNames", :key="index")
-                            input(type="checkbox", name="dict-name", :value="name", v-model="searchItem.targetNames")
-                            span {{ name }}
-                            span.close(:data-key="index") &times;
-                    div.half
-                        input(type="file", multiple, @change="addDictionaries")
-            .search-tab-content(v-select="selected", data-value="4")
-                .flex
-                    div 内容が存在しない項目は表示しない：
-                        input(type="checkbox", :checked="hiddenEmptyContents", @change="$emit('change', $event.target.checked)")
+    .search.flex
+        .default-area.flex
+            .search-area
+                label 検索文字列
+                input(type="text", v-model="searchItem.word", @keydown="searchWhenEnter")
+                select(v-model="searchItem.searchType")
+                    option(v-for="type in searchTypes", :value="type[0]") {{ type[1] }}
+                select(v-model="searchItem.matchType")
+                    option(v-for="type in matchTypes", :value="type[0]") {{ type[1] }}
+                button.search-btn(@click="$emit('search-word', searchItem)") 検索
+        .vertical-line
+        .script-area.flex
+            .small スクリプト検索
+            CodeMirrorVue.script(v-model="searchItem.script", @keydown="searchScriptWhenEnter")
+            button.search-btn(@click="$emit('search-script', searchItem)") 検索
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { SearchItem, SearchType, MatchType } from '@/libs/search.item';
-import { DictionaryManager } from '@/libs/dictionary.manager';
-import { PDicReader } from '@/libs/dictionary/pdic';
-import { BaseDictionary } from '@/libs/dictionary/dictionary';
-import { TnnDictionary } from '@/libs/dictionary/tnn';
-import TnnSearcher from '@/libs/searcher/tnnsearcher';
+import CodeMirrorVue from "@/components/CodeMirrorVue.vue";
+import { BaseWord } from '@/libs/dictionary/dictionary';
 
 @Component({
-    model: {
-        prop: "checked",
-        event: "change"
-    },
+    components: {
+        CodeMirrorVue,
+    }
 })
 export default class Search extends Vue {
-    @Prop() private dictionaries!: DictionaryManager;
-    @Prop() private hiddenEmptyContents!: boolean;
-
+    @Prop() private updateWord!: (word?: BaseWord) => void;
+    
     private readonly searchTypes: [SearchType, string][] = [
         [SearchType.WORD, "単語"],
         [SearchType.TRANSLATION, "訳語"],
@@ -70,135 +47,39 @@ export default class Search extends Vue {
         [MatchType.NOT, "除外"],
     ];
 
-    private selected: string;
     private dictionaryNames: string[];
     private searchItem: SearchItem;
 
     constructor() {
         super();
 
-        this.selected = "1";
         this.dictionaryNames = [];
         this.searchItem = {
             word: "",
             searchType: SearchType.WORD,
             matchType: MatchType.FORWARD,
             script: "",
-            targetNames: []
         };
     }
 
     searchWhenEnter(event: KeyboardEvent): void {
         if (event.ctrlKey && event.key === "Enter") {
-            switch (this.selected) {
-                case "1":
-                    this.$emit("search-word", this.searchItem);
-                    break;
-                case "2":
-                    this.$emit("search-script", this.searchItem);
-                    break;
-                default:
-                    break;
-            }
+            this.$emit("search-word", this.searchItem);
         }
     }
 
-    changeSelected(event: Event): void {
-        const el = event.target;
-
-        if (el instanceof HTMLElement) {
-            const value = el.getAttribute("data-value");
-
-            if (value != null) {
-                this.selected = value;
-            }
+    searchScriptWhenEnter(event: KeyboardEvent): void {
+        if (event.ctrlKey && event.key === "Enter") {
+            this.$emit("search-script", this.searchItem);
         }
     }
 
-    removeDictionary(event: Event): void {
-        const el = event.target;
-
-        if (el instanceof HTMLElement) {
-            const value = el.getAttribute("data-key");
-
-            if (value != null) {
-                const removeNames = this.dictionaryNames.splice(parseInt(value), 1);
-                if (removeNames.length > 0) {
-                    const index = this.searchItem.targetNames.indexOf(removeNames[0]);
-                    if (index !== -1) {
-                        this.searchItem.targetNames.splice(index, 1);
-                    }
-                    this.dictionaries.remove(removeNames[0]);
-                }
-            }
-        }
-    }
-
-    addDictionaries(event: Event): void {
-        const files = (event.target as HTMLInputElement).files;
-
-        if (files) {
-            for (const file of files) {
-                const filename = file.name;
-
-                if (filename.endsWith(".json")) {
-                    file.text().then(result => {
-                        let dictionary = JSON.parse(result as string) as BaseDictionary;
-                        dictionary.dictionaryName = filename;
-
-                        if ((dictionary as TnnDictionary).dictionary?.type?.toLowerCase() === "tnn") {
-                            dictionary.dictionaryType = "tnn";
-                            dictionary = TnnSearcher.recreate(dictionary as TnnDictionary);
-                        }
-                        else {
-                            dictionary.dictionaryType = "otm";
-                        }
-
-                        if (!this.dictionaryNames.includes(filename)) {
-                            this.dictionaryNames.push(filename);
-                            this.searchItem.targetNames.push(filename);
-                        }
-                        this.dictionaries.set(filename, dictionary);
-                    }).catch(reason => {
-                        console.log(reason);
-                    });
-                }
-                else if (filename.endsWith(".csv")) {
-                    file.arrayBuffer().then(result => {
-                        const typeArray = new Uint8Array(result);
-                        const reader = new FileReader();
-
-                        reader.onload = () => {
-                            const dictionary = PDicReader.parseCsv(reader.result as string);
-                            dictionary.dictionaryName = filename;
-                            dictionary.dictionaryType = "pdic";
-
-                            if (!this.dictionaryNames.includes(filename)) {
-                                this.dictionaryNames.push(filename);
-                                this.searchItem.targetNames.push(filename);
-                            }
-                            this.dictionaries.set(filename, dictionary);
-                        };
-
-                        if(typeArray[0] === 0xFF && typeArray[1] === 0xFE) {
-                            reader.readAsText(file, "UTF-16LE");
-                        }
-                        else if (typeArray[0] === 0xFE && typeArray[1] === 0xFF) {
-                            reader.readAsText(file, "UTF-16BE");
-                        }
-                        else if (typeArray[0] === 0xEF && typeArray[1] === 0xBB && typeArray[2] === 0xBF) {
-                            reader.readAsText(file.slice(3), "UTF-8");
-                        }
-                        else {
-                            reader.readAsText(file, "UTF-8");
-                        }
-                    }).catch(reason => {
-                        console.log(reason);
-                    });
-                }
-            }
-
-            (event.target as HTMLInputElement).files = null;
+    callDialog(event: Event) {
+        const option = (event.target as HTMLElement | null)?.getAttribute("data-value");
+        switch (option) {
+            case "editor":
+                this.updateWord();
+                break;
         }
     }
 }
@@ -209,77 +90,64 @@ $main-color: black;
 $sub-color: white;
 
 .search {
-    .search-tab {
-        padding: 0;
+    width: 100%;
+    border: solid 1px $main-color;
+    margin: 0;
+    box-sizing: border-box;
+    
+    select {
+        min-width: 50px;
+    }
 
-        button.search-tab-btn {
-            color: $main-color;
-            background-color: $sub-color;
-            border: 0;
-            border-top: solid 1px $main-color;
-            border-left: solid 1px $main-color;
-            padding: 5px 10px;
-            margin: 0;
+    .default-area,
+    .script-area {
+        margin: 5px;
+    }
 
-            &:last-child {
-                border-right: solid 1px $main-color;
-            }
+    .small {
+        font-size: small;
+    }
 
-            &.selected {
-                color: $sub-color;
-                background-color: $main-color;
+    .search-btn {
+        margin-left: 1px;
+        margin-right: 1px;
+
+        &:first-child {
+            margin-left: 0;
+        }
+        &:last-child {
+            margin-right: 0;
+        }
+    }
+
+    .default-area {
+        flex-direction: column;
+        
+        .search-area {
+            label {
+                margin-right: 3px;
             }
         }
     }
 
-    .search-contents {
-        border: solid 1px $main-color;
-        padding: 2px;
-        margin: 0;
-        width: 100%;
-        box-sizing: border-box;
+    .script-area {
+        flex-grow: 1;
 
-        .search-tab-content {
-            display: none;
+        .script {
             width: 100%;
-
-            > .flex > * {
-                box-sizing: border-box;
-                margin-top: 5px;
-                margin-bottom: 5px;
-                margin-left: 10px;
-                margin-right: 10px;
-            }
-
-            .script {
-                resize: vertical;
-                flex-grow: 1;
-            }
-
-            &.selected {
-                display: initial;
-            }
-
-            &.search-panel {
-                > .flex > * {
-                    height: 26px;
-                }
-
-                input[type=text],
-                select {
-                    border-color: solid 1px $main-color;
-                }
-            }
-
-            &.dictionary-list {
-                ul {
-                    max-height: 200px;
-                    overflow-y: scroll;
-                    padding-left: 0;
-                    list-style: none;
-                }
-            }
         }
+    }
+
+    .vertical-line {
+        margin-top: 0;
+        margin-bottom: 0;
+        margin-left: 5px;
+        margin-right: 5px;
+        padding: 1px;
+
+        border: 1px none black;
+        border-left-style: solid; 
+        border-right-style: solid; 
     }
 }
 </style>

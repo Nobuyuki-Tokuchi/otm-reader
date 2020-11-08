@@ -1,7 +1,6 @@
 import { BaseDictionary, BaseWord } from "./dictionary";
 
-export interface OtmDictionary extends BaseDictionary {
-    words: OtmWord[];
+export interface OtmDictionary extends BaseDictionary<OtmWord> {
 }
 
 export interface OtmWord extends BaseWord {

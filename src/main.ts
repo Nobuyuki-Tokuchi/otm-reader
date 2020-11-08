@@ -1,5 +1,8 @@
 import Vue from 'vue'
 import App from './App.vue'
+import store from './store'
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/theme/rubyblue.css';
 
 Vue.config.productionTip = false
 Vue.directive("select", {
@@ -25,8 +28,9 @@ Vue.directive("select", {
             el.classList.add("selected");
         }
     }
-})
+});
 
 new Vue({
-  render: h => h(App)
+    store,
+    render: h => h(App)
 }).$mount('#app')

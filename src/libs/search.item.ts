@@ -6,7 +6,6 @@ export interface SearchItem {
     searchType: SearchType;
     matchType: MatchType;
     script: string;
-    targetNames: string[];
 }
 
 export enum SearchType {

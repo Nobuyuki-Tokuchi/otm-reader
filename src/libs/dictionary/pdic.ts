@@ -1,6 +1,6 @@
 import { BaseDictionary, BaseWord } from './dictionary';
 
-export class PersonalDictionary implements BaseDictionary {
+export class PersonalDictionary implements BaseDictionary<PDicWord> {
     words: PDicWord[];
     dictionaryName?: string;
     dictionaryType?: string;
