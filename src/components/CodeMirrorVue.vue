@@ -33,12 +33,18 @@ export default Vue.extend({
         this._codemirror = CodeMirror.fromTextArea(this.$refs.editor as HTMLTextAreaElement, {
             value: this.value,
             tabSize: 2,
-            indentWithTabs: false,
             lineNumbers: true,
             theme: "rubyblue",
             mode: this.mode ?? "text",
             lineWrapping: true,
         } as CodeMirror.EditorConfiguration);
+
+        this._codemirror.setOption("extraKeys", {
+            Tab: function(cm) {
+                const spaces = " ".repeat(cm.getOption("indentUnit") ?? 0);
+                cm.replaceSelection(spaces);
+            }
+        });
 
         const codemirror = this._codemirror as CodeMirror.Editor;
         codemirror.setSize(this.width ?? "100%", this.height ?? "100%");

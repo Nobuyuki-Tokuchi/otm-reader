@@ -1,6 +1,6 @@
 <template lang="pug">
     .side-bar(:class="{ open: openSidebar }")
-        h1.app-title OTM Reader
+        h1.app-title NtDic
         h3 設定
         div
             h4 辞書一覧
@@ -17,6 +17,17 @@
             .display-area
                 div 内容が存在しない項目は表示しない：
                     input(type="checkbox", v-model="hiddenEmptyContents")
+                div 保存後に編集ダイアログを閉じる：
+                    input(type="checkbox", v-model="allwaysCloseEndEdit")
+        hr
+        div
+            h4 辞書サーバー
+            .display-area
+                span 辞書サーバURL
+                input(type="text", v-model="apiUrl")
+                button(@click="updateUrl") 設定
+                div
+                    button(@click="reloadData") 再取得
         button.toggle-side-bar(@click="toggle")
             .toggle-item
 </template>
@@ -33,16 +44,20 @@ import DictionaryStore from '@/store/modules/dictionary.store';
 import DisplayStore from '@/store/modules/display.store';
 import { NtdicDictionary } from '@/libs/dictionary/ntdic';
 
-@Component
+@Component({
+    mounted: function () {
+        this.$data.apiUrl = this.$store.getters.apiUrl;
+    }
+})
 export default class Sidebar extends Vue {
     private openSidebar: boolean;
-    private dictionariesApiUrl: string;
+    private apiUrl: string;
     
     constructor() {
         super();
 
         this.openSidebar = false;
-        this.dictionariesApiUrl = localStorage.getItem("dictionariesApiUrl") ?? "";
+        this.apiUrl = "";
     }
 
     get dictionaryNames(): string[] {
@@ -68,6 +83,16 @@ export default class Sidebar extends Vue {
     set hiddenEmptyContents(value: boolean) {
         const instance = getModule(DisplayStore, this.$store);
         instance.setHiddenEmptyContent(value);
+    }
+
+    get allwaysCloseEndEdit(): boolean {
+        const instance = getModule(DisplayStore, this.$store);
+        return instance.allwaysCloseEndEdit;
+    }
+
+    set allwaysCloseEndEdit(value: boolean) {
+        const instance = getModule(DisplayStore, this.$store);
+        instance.setAllwaysCloseEndEdit(value);
     }
 
     toggle() {
@@ -194,6 +219,20 @@ export default class Sidebar extends Vue {
             dictionary.dictionaryType = "pdic";
 
             return dictionary;
+        });
+    }
+
+    updateUrl() {
+        this.$store.commit("setApiUrl", this.apiUrl);
+    }
+
+    reloadData() {
+        const dictionary = getModule(DictionaryStore, this.$store);
+        
+        dictionary.loadDictionaries().then(x => {
+            if (x.result !== "done") {
+                console.log(x);
+            }
         });
     }
 }

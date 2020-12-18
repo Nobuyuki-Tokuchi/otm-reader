@@ -11,16 +11,14 @@
                 button.search-btn(@click="$emit('search-word', searchItem)") 検索
         .vertical-line
         .script-area.flex
-            .small スクリプト検索
             CodeMirrorVue.script(v-model="searchItem.script", @keydown="searchScriptWhenEnter")
             button.search-btn(@click="$emit('search-script', searchItem)") 検索
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Vue } from 'vue-property-decorator';
 import { SearchItem, SearchType, MatchType } from '@/libs/search.item';
 import CodeMirrorVue from "@/components/CodeMirrorVue.vue";
-import { BaseWord } from '@/libs/dictionary/dictionary';
 
 @Component({
     components: {
@@ -28,8 +26,6 @@ import { BaseWord } from '@/libs/dictionary/dictionary';
     }
 })
 export default class Search extends Vue {
-    @Prop() private updateWord!: (word?: BaseWord) => void;
-    
     private readonly searchTypes: [SearchType, string][] = [
         [SearchType.WORD, "単語"],
         [SearchType.TRANSLATION, "訳語"],
@@ -73,15 +69,6 @@ export default class Search extends Vue {
             this.$emit("search-script", this.searchItem);
         }
     }
-
-    callDialog(event: Event) {
-        const option = (event.target as HTMLElement | null)?.getAttribute("data-value");
-        switch (option) {
-            case "editor":
-                this.updateWord();
-                break;
-        }
-    }
 }
 </script>
 
@@ -102,10 +89,6 @@ $sub-color: white;
     .default-area,
     .script-area {
         margin: 5px;
-    }
-
-    .small {
-        font-size: small;
     }
 
     .search-btn {

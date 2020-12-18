@@ -2,12 +2,11 @@
     div
         .word-title.flex(:id="word.entry.id")
             label.word-name {{ word.entry.form }}
-            span.word-pronunciations(v-if="showPronunciations")
-                span(v-for="pronunciation in word.entry.pronunciations") {{ pronunciation }}
-            span.stretch-space
-            span(v-if="showTags")
-                span.word-tag(v-for="tag in word.tags") {{ tag }}
-            span.dictionary-name {{ word.dictionaryName }}
+            .word-pronunciations.flex(v-if="showPronunciations")
+                .word-pronunciation(v-for="pronunciation in word.entry.pronunciations") {{ pronunciation }}
+            .stretch-space
+            .word-tag(v-for="tag in word.tags") {{ tag }}
+            .dictionary-name {{ word.dictionaryName }}
         .word-verbose.flex
             .word-translations.half(v-if="showTranslation")
                 .word-translation.title 訳語
@@ -51,13 +50,11 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { NtdicWord } from '@/libs/dictionary/ntdic';
-import { BaseWord } from '@/libs/dictionary/dictionary';
 
 @Component
 export default class NtdicResult extends Vue {
-    @Prop() private word!: NtdicWord;
-    @Prop() private hiddenEmptyContents!: boolean;
-    @Prop() private updateWord!: (word: BaseWord) => void;
+    @Prop() word!: NtdicWord;
+    @Prop() hiddenEmptyContents!: boolean;
 
     private openHistory: boolean;
 
@@ -132,10 +129,6 @@ export default class NtdicResult extends Vue {
         return this.openHistory && this.word.histories.length > 0;
     }
 
-    public editWord() {
-        this.updateWord(this.word);
-    }
-
     public toggleHistory() {
         if (!this.hasOnlyHistoryOrNone) {
             this.openHistory = !this.openHistory;
@@ -174,28 +167,24 @@ $sub-color: white;
     .word-pronunciations {
         color: $main-color;
         background-color: $sub-color;
-    }
-
-    .word-tag {
         margin-left: 2px;
         margin-right: 2px;
     }
 
     .word-pronunciations {
-        margin-left: 10px;
         font-size: 0.875rem;
-        padding-top: 0;
-        padding-bottom: 0;
-        margin-top: 2px;
-        margin-bottom: 2px;
-        
-        span::after {
-            content: ",";
-            margin-right: 4px;
-        }
-        span:last-child::after {
-            content: initial;
-            margin-right: 0px;
+        align-items: center;
+
+        .word-pronunciation {
+            &::after {
+                content: ",";
+                margin-right: 4px;
+            }
+
+            &:last-child::after {
+                content: initial;
+                margin-right: 0px;
+            }
         }
     }
 }
@@ -274,7 +263,6 @@ $sub-color: white;
                 padding-left: 2px;
                 padding-right: 2px;
                 border: 1px solid black;
-                border-radius: 25%;
             }
 
             &.obsolete::before {

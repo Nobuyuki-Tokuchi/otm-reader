@@ -2,9 +2,9 @@
     div
         .word-title.flex(:id="word.entry.id")
             label.word-name {{ word.entry.form }}
-            span.stretch-space
-            span.word-tag(v-for="tag in word.tags") {{ tag }}
-            span.dictionary-name {{ word.dictionaryName }}
+            .stretch-space
+            .word-tag(v-for="tag in word.tags") {{ tag }}
+            .dictionary-name {{ word.dictionaryName }}
         .word-verbose.flex
             .word-translations.half(v-if="showTranslation")
                 .word-translation.title 訳語
@@ -33,13 +33,11 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { OtmWord } from '@/libs/dictionary/otm';
-import { BaseWord } from '@/libs/dictionary/dictionary';
 
 @Component
 export default class OtmResult extends Vue {
-    @Prop() private word!: OtmWord;
-    @Prop() private hiddenEmptyContents!: boolean;
-    @Prop() private updateWord!: (word: BaseWord) => void;
+    @Prop() word!: OtmWord;
+    @Prop() hiddenEmptyContents!: boolean;
 
     constructor() {
         super();
@@ -68,10 +66,6 @@ export default class OtmResult extends Vue {
 
     public get showRelation(): boolean {
         return !this.hiddenEmptyContents || this.word.relations.length > 0;
-    }
-
-    public editWord() {
-        this.updateWord(this.word);
     }
 }
 </script>

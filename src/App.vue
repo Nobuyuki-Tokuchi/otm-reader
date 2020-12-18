@@ -1,9 +1,9 @@
 <template lang="pug">
     #app
         .top-bar
-            Search.search-main(@search-word="search", @search-script="searchScript", :updateWord="updateWord")
+            Search.search-main(@search-word="search", @search-script="searchScript")
             Pager.pager-main(v-model="pageCount", :count="count", :listingCount="listingCount")
-        Viewer.view-area(:result="result", :updateWord="updateWord", v-model="pageCount", :listingCount="listingCount")
+        Viewer.view-area(:result="result", v-model="pageCount", :listingCount="listingCount")
         Sidebar
 </template>
 
@@ -27,6 +27,15 @@ import { SearchItem } from './libs/search.item';
         Viewer,
         Sidebar,
     },
+    mounted: function () {
+        const dictionaryInstance = getModule(DictionaryStore, this.$store);
+
+        dictionaryInstance.loadDictionaries().then(x => {
+            if (x.result !== "done") {
+                console.log(x);
+            }
+        });
+    }
 })
 export default class App extends Vue {
     private originalWord: BaseWord | null;
@@ -47,10 +56,6 @@ export default class App extends Vue {
         return this.result.length;
     }
 
-    updateWord(word?: BaseWord) {
-        this.originalWord = word ?? null;
-    }
-    
     search(searchItem: SearchItem): void {
         const instance = getModule(DictionaryStore, this.$store);
         this.result = instance.search(searchItem);

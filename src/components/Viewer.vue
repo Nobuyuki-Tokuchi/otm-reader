@@ -1,6 +1,6 @@
 <template lang="pug">
     .add-space
-        Result(:words="displayWords", :updateWord="updateWord")
+        Result(:words="displayWords")
         hr(v-if="count > 0")
         Pager(:pageCount="pageCount", @input="getPageCount", :count="count", :listingCount="listingCount", v-if="count > 0")
 </template>
@@ -23,7 +23,6 @@ import DictionaryStore from '@/store/modules/dictionary.store';
     },
 })
 export default class Viewer extends Vue {
-    @Prop() updateWord!: (word?: BaseWord) => void;
     @Prop() result!: BaseWord[];
     @Prop() listingCount!: number;
     @Prop() pageCount!: number;

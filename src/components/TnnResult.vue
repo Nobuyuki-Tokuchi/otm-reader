@@ -27,7 +27,7 @@ import { TnnWord } from '@/libs/dictionary/tnn';
 
 @Component
 export default class TnnResult extends Vue {
-    @Prop() private word!: TnnWord;
+    @Prop() word!: TnnWord;
 
     constructor() {
         super();

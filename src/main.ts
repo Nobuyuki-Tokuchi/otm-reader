@@ -1,8 +1,6 @@
 import Vue from 'vue'
 import App from './App.vue'
 import store from './store'
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/theme/rubyblue.css';
 
 Vue.config.productionTip = false
 Vue.directive("select", {

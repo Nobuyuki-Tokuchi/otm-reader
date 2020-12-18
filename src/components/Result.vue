@@ -1,10 +1,10 @@
 <template lang="pug">
     .word-list
         .word(v-for="word in words")
-            OtmResult(v-if="word.dictionaryType === 'otm'", :word="word", :hiddenEmptyContents="hiddenEmptyContents", :updateWord="updateWord")
-            NtdicResult(v-else-if="word.dictionaryType === 'ntdic'", :word="word", :hiddenEmptyContents="hiddenEmptyContents", :updateWord="updateWord")
-            PDicResult(v-else-if="word.dictionaryType === 'pdic'", :word="word", :hiddenEmptyContents="hiddenEmptyContents", :updateWord="updateWord")
-            TnnResult(v-else-if="word.dictionaryType === 'tnn'", :word="word", :hiddenEmptyContents="hiddenEmptyContents", :updateWord="updateWord")
+            OtmResult(v-if="word.dictionaryType === 'otm'", :word="word", :hiddenEmptyContents="hiddenEmptyContents")
+            NtdicResult(v-else-if="word.dictionaryType === 'ntdic'", :word="word", :hiddenEmptyContents="hiddenEmptyContents")
+            PDicResult(v-else-if="word.dictionaryType === 'pdic'", :word="word", :hiddenEmptyContents="hiddenEmptyContents")
+            TnnResult(v-else-if="word.dictionaryType === 'tnn'", :word="word", :hiddenEmptyContents="hiddenEmptyContents")
             div(v-else) 何かミスってる
 </template>
 
@@ -27,8 +27,7 @@ import { getModule } from 'vuex-module-decorators';
     }
 })
 export default class Result extends Vue {
-    @Prop() private words!: BaseWord[];
-    @Prop() private updateWord!: (word: BaseWord) => void;
+    @Prop() words!: BaseWord[];
 
     constructor() {
         super();

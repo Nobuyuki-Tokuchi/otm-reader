@@ -24,8 +24,8 @@ import { PDicWord } from '@/libs/dictionary/pdic';
 
 @Component
 export default class PDicResult extends Vue {
-    @Prop() private word!: PDicWord;
-    @Prop() private hiddenEmptyContents!: boolean;
+    @Prop() word!: PDicWord;
+    @Prop() hiddenEmptyContents!: boolean;
 
     constructor() {
         super();

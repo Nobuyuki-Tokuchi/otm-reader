@@ -233,162 +233,26 @@ export default class DictionaryStore extends VuexModule {
         this._targetNames.push(...payload.dictionaryNames);
     }
 
-    @Mutation
-    setWord(payload: { dictionaryName: string; word: BaseWord }) {
-        const dictionary = this._dictionaries.get(payload.dictionaryName);
-
-        if (dictionary) {
-            if (dictionary.dictionaryType === "pdic" && payload.word.dictionaryType === "pdic") {
-                const pdicWord =  (payload.word as PDicWord);
-                if (!pdicWord.word) { return }
-
-                const wordIndex = (dictionary.words as PDicWord[]).findIndex(x => x.word === pdicWord.word);
-                if (wordIndex === -1) {
-                    dictionary.words.push(payload.word);
-                }
-                else {
-                    dictionary.words[wordIndex] = pdicWord;
-                }
-            }
-            else if (dictionary.dictionaryType === "tnn" && payload.word.dictionaryType === "tnn") {
-                const tnnWord =  (payload.word as TnnWord);
-                if (!tnnWord.entry.form) { return }
-
-                const tnnWords = (dictionary.words as TnnWord[]);
-                const wordIndex = tnnWords.findIndex(x => x.entry.id === tnnWord.entry.id);
-                if (wordIndex === -1) {
-                    tnnWord.entry.id = (this._dictionaryIds.get(payload.dictionaryName) ?? 0) + 1
-                    this._dictionaryIds.set(payload.dictionaryName, tnnWord.entry.id);
-                    dictionary.words.push(tnnWord);
-                }
-                else {
-                    dictionary.words[wordIndex] = tnnWord;
-                }
-            }
-            else if (dictionary.dictionaryType === "otm" && payload.word.dictionaryType === "otm") {
-                const otmWord =  (payload.word as OtmWord);
-                if (!otmWord.entry.form) { return }
-
-                const otmWords = (dictionary.words as OtmWord[]);
-                let wordIndex: number;
-                if (otmWord.entry.id !== -1) {
-                    wordIndex = otmWords.findIndex(x => x.entry.id === otmWord.entry.id);
-                }
-                else {
-                    wordIndex = -1;
-                }
-
-                if (wordIndex === -1) {
-                    wordIndex = otmWords.findIndex(x => x.entry.form === otmWord.entry.form);
-                }
-
-                if (wordIndex === -1) {
-                    otmWord.entry.id = (this._dictionaryIds.get(payload.dictionaryName) ?? 0) + 1
-                    this._dictionaryIds.set(payload.dictionaryName, otmWord.entry.id);
-                    dictionary.words.push(otmWord);
-                }
-                else {
-                    dictionary.words[wordIndex] = otmWord;
-                }
-
-                const relationWordForms = otmWord.relations.map(x => x.entry.form);
-                const relatedWords = otmWords.filter(x => relationWordForms.includes(x.entry.form));
-
-                for (const relation of otmWord.relations) {
-                    const relatedWord = relatedWords.find(x => x.entry.form == relation.entry.form);
-                    if (relatedWord) {
-                        relation.entry = relatedWord.entry;
-                        const word = relatedWord.relations.find(x => x.entry.form === relation.entry.form);
-                        if (word) {
-                            word.entry = relation.entry;
-                        }
-                        else {
-                            relatedWord.relations.push({
-                                title: relation.title,
-                                entry: otmWord.entry
-                            });
-                        }
-                    }
-                }
-            }
-            else if (dictionary.dictionaryType === "ntdic" && payload.word.dictionaryType === "ntdic") {
-                const ntdicWord =  (payload.word as NtdicWord);
-                if (!ntdicWord.entry.form) { return }
-
-                // set datetime
-                const datetime = new Date();
-                for (const history of ntdicWord.histories.filter(x => x.datetime === "$now")) {
-                    history.datetime = datetime.toISOString();
-                }
-
-                // insert or update
-                const ntdicWords = (dictionary.words as NtdicWord[]);
-                let wordIndex: number;
-
-                if (ntdicWord.entry.id !== -1) {
-                    wordIndex = ntdicWords.findIndex(x => x.entry.id === ntdicWord.entry.id);
-                }
-                else {
-                    wordIndex = -1;
-                }
-
-                if (wordIndex === -1) {
-                    wordIndex = ntdicWords.findIndex(x => x.entry.form === ntdicWord.entry.form);
-                }
-
-                if (wordIndex === -1) {
-                    ntdicWord.entry.id = (this._dictionaryIds.get(payload.dictionaryName) ?? 0) + 1
-                    this._dictionaryIds.set(payload.dictionaryName, ntdicWord.entry.id);
-                    dictionary.words.push(ntdicWord);
-                }
-                else {
-                    dictionary.words[wordIndex] = ntdicWord;
-                }
-
-                // set relation
-                const relationWordForms = ntdicWord.relations.filter(x => x.entry.id < 0).map(x => x.entry.form);
-                const relatedWords = ntdicWords.filter(x => relationWordForms.includes(x.entry.form));
-
-                for (const relation of ntdicWord.relations) {
-                    const relatedWord = relatedWords.find(x => x.entry.form == relation.entry.form);
-                    if (relatedWord) {
-                        relation.entry = relatedWord.entry;
-                        const word = relatedWord.relations.find(x => x.entry.form === relation.entry.form);
-                        if (word) {
-                            word.entry = {
-                                id: relation.entry.id,
-                                form: relation.entry.form
-                            };
-                        }
-                        else {
-                            relatedWord.relations.push({
-                                title: relation.title,
-                                entry: {
-                                    id: relation.entry.id,
-                                    form: relation.entry.form
-                                }
-                            });
-                        }
-                    }
-                }
-            }
-            else {
-                throw new TypeError(`Mismatch type: dictionary = "${dictionary.dictionaryType}", word = "${payload.word}"`);
-            }
-
-            this._dictionaries.set(payload.dictionaryName, dictionary);
-        }
-        else {
-            throw new Error(`Not found dictionary: ${payload.dictionaryName}`);
-        }
-    }
-
     @Action
     async loadDictionaries(): Promise<ActionResult> {
-        const url = localStorage.getItem("dictionariesApiUrl");
-        if (url) {
+        const url = this.context.rootGetters.apiUrl;
+
+        if (url && typeof url === "string") {
+            let replacedUrl = url.replace("{name}", "dictionary");
+            let bodyContents: Record<string, unknown>;
+            
+            if (url.includes("{mode}")) {
+                replacedUrl = replacedUrl.replace("{mode}", "get");
+                bodyContents = {};
+            }
+            else {
+                bodyContents = {
+                    mode: "get",
+                };
+            }
+
             try {
-                const response = await fetch(url, {
+                const response = await fetch(replacedUrl, {
                     method: "POST",
                     mode: "cors",
                     cache: "no-cache",
@@ -397,12 +261,16 @@ export default class DictionaryStore extends VuexModule {
                     },
                     redirect: "follow",
                     referrerPolicy: "no-referrer",
-                    body: JSON.stringify({
-                        mode: "get_dictionaries",
-                    }),
+                    body: JSON.stringify(bodyContents),
                 });
 
-                const dictionaries = await response.json();
+                const result = await response.json();
+
+                if (result["status"] === "error") {
+                    throw result["errorReason"];
+                }
+
+                const dictionaries = result["data"];
 
                 this.removeAll();
                 for (const key in dictionaries) {
@@ -422,55 +290,15 @@ export default class DictionaryStore extends VuexModule {
                 return { result: "done" };
             }
             catch (error) {
-                return { result: "fail", reason: error };
-            }
-        }
-        else {
-            return { result: "none" };
-        }
-    }
-
-    @Action
-    async saveDictionaries(): Promise<ActionResult> {
-        const url = localStorage.getItem("dictionariesApiUrl");
-        if (url) {
-            const dictionaries: { [key: string]: BaseDictionary<BaseWord> } = {};
-
-            for (let index = 0; index < this._dictionaryNames.length; index++) {
-                const key = this._dictionaryNames[index];
-                dictionaries[key] = this._dictionaries.get(key)!;
-            }
-    
-            try {
-                const response = await fetch(url, {
-                    method: "POST",
-                    mode: "cors",
-                    cache: "no-cache",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    redirect: "follow",
-                    referrerPolicy: "no-referrer",
-                    body: JSON.stringify({
-                        mode: "update",
-                        dictionaries: dictionaries,
-                    }, (key, value) => {
-                        if (key === "dictionaryName" || key === "dictionaryType") {
-                            return undefined;
-                        }
-                        else {
-                            return value;
-                        }
-                    }),
-                });
-                if(response.ok) {
-                    return { result: "done" };
+                if (typeof error === "string") {
+                    return { result: "fail", reason: error };
+                }
+                else if (error instanceof Error) {
+                    return { result: "fail", reason: error.message + "::" + error.stack };
                 }
                 else {
-                    return { result: "fail" };
+                    return { result: "fail", reason: error?.["errorReason"] };
                 }
-            } catch (error) {
-                return { result: "fail", reason: error };
             }
         }
         else {
