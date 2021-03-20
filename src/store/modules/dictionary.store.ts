@@ -1,13 +1,11 @@
 import { BaseDictionary, BaseWord } from '@/libs/dictionary/dictionary';
 import { OtmDictionary, OtmWord } from '@/libs/dictionary/otm';
 import { PDicWord, PersonalDictionary } from '@/libs/dictionary/pdic';
-import { TnnDictionary, TnnWord } from '@/libs/dictionary/tnn';
 import OtmSearch from '@/libs/otmsearch/otmsearch';
 import { MatchType, SearchItem } from '@/libs/search.item';
 import MatchFunction from '@/libs/searcher/matchfunction';
 import OtmSearcher from '@/libs/searcher/otmsearcher';
 import PDicSearcher from '@/libs/searcher/pdicsearcher';
-import TnnSearcher from '@/libs/searcher/tnnsearcher';
 import { Action, Module, Mutation, VuexModule } from 'vuex-module-decorators';
 import { ActionResult } from '@/libs/interfaces';
 import NtdicSearcher from '@/libs/searcher/ntdicsearcher';
@@ -72,9 +70,6 @@ export default class DictionaryStore extends VuexModule {
                                 break;
                             case "otm":
                                 result = OtmSearcher.search(dict as OtmDictionary, searchItem, matchFunc);
-                                break;
-                            case "tnn":
-                                result = TnnSearcher.search(dict as TnnDictionary, searchItem, matchFunc);
                                 break;
                             case "ntdic":
                                 result = NtdicSearcher.search(dict as NtdicDictionary, searchItem, matchFunc);
@@ -155,8 +150,6 @@ export default class DictionaryStore extends VuexModule {
         switch (x.dictionaryType) {
             case "pdic":
                 return (x as PDicWord).word;
-            case "tnn":
-                return (x as TnnWord).entry.form[0];
             case "ntdic":
                 return (x as NtdicWord).entry.form;
             default:
@@ -176,8 +169,8 @@ export default class DictionaryStore extends VuexModule {
                     return (dictionary.words as PDicWord[]).some(x => x.word === (word as PDicWord).word);
                 default:
                     {
-                        const wordEntry = (word as TnnWord | NtdicWord | OtmWord).entry;
-                        return (dictionary.words as (TnnWord | NtdicWord | OtmWord)[])
+                        const wordEntry = (word as NtdicWord | OtmWord).entry;
+                        return (dictionary.words as (NtdicWord | OtmWord)[])
                             .some(x => x.entry.form === wordEntry.form && x.entry.id !== wordEntry.id);
                     }
             }
@@ -199,7 +192,7 @@ export default class DictionaryStore extends VuexModule {
             case "otm":
             case "ntdic":
                 this._dictionaryIds.set(payload.dictionaryName,
-                    (payload.dictionary.words as (TnnWord | OtmWord | NtdicWord)[]).reduce((acc, x) => Math.max(acc, x.entry.id), 0));
+                    (payload.dictionary.words as (OtmWord | NtdicWord)[]).reduce((acc, x) => Math.max(acc, x.entry.id), 0));
                 break;
         }
     }
@@ -231,6 +224,17 @@ export default class DictionaryStore extends VuexModule {
     targetSwitch(payload: { dictionaryNames: string[] }) {
         this._targetNames.length = 0;
         this._targetNames.push(...payload.dictionaryNames);
+    }
+
+    @Mutation
+    targetToggle(payload: { dictionaryName: string }) {
+        const index = this._targetNames.indexOf(payload.dictionaryName);
+        if (index !== -1) {
+            this._targetNames.splice(index, 1);
+        }
+        else {
+            this._targetNames.push(payload.dictionaryName);
+        }
     }
 
     @Action
@@ -277,10 +281,6 @@ export default class DictionaryStore extends VuexModule {
                     const data = dictionaries[key] as { dictionary: BaseDictionary; type: string };
                     data.dictionary.dictionaryName = key;
                     data.dictionary.dictionaryType = data.type;
-
-                    if (data.type === "tnn") {
-                        data.dictionary = TnnSearcher.recreate(dictionaries as TnnDictionary);
-                    }
 
                     this.setDictionary({
                         dictionaryName: key,

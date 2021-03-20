@@ -1,33 +1,43 @@
 <template lang="pug">
-    div
-        .word-title.flex(:id="word.entry.id")
-            label.word-name {{ word.entry.form }}
-            .stretch-space
-            .word-tag(v-for="tag in word.tags") {{ tag }}
-            .dictionary-name {{ word.dictionaryName }}
-        .word-verbose.flex
-            .word-translations.half(v-if="showTranslation")
-                .word-translation.title 訳語
-                .word-translation.flex(v-for="translation in word.translations")
-                    .word-translation-title {{ translation.title }}
-                    .word-translation-text
-                        span.word-translation-form(v-for="form in translation.forms") {{ form }}
-            .word-contents.half(v-if="showContent")
-                .word-content.title 内容
-                .word-content.flex(v-for="content in contents")
-                    .word-content-title(v-if="content.title !== ''") {{ content.title }}
-                    .word-content-text
-                        div(v-for="text in content.textList") {{ text }}
-            .word-variations.half(v-if="showVariation")
-                .word-variation.title 変化形
-                .word-variation.flex(v-for="variation in word.variations")
-                    .word-variation-title(v-if="variation.title !== ''") {{ variation.title }}
-                    .word-variation-text {{ variation.form }}
-            .word-relations.half(v-if="showRelation")
-                .word-relation.title 関連語
-                .word-relation.flex(v-for="relation in word.relations")
-                    .word-relation-title(v-if="relation.title !== ''") {{ relation.title }}
-                    .word-relation-text {{ relation.entry.form }}
+    v-card
+        v-card-title.secondary.white--text.d-flex.py-2(:id="word.entry.id")
+            .font-weight-bold {{ word.entry.form }}
+            div.flex-grow-1.flex-shrink-1
+            v-chip.mx-1(label, v-for="(tag, i) in word.tags", :key="i") {{ tag }}
+            div.ml-4 {{ word.dictionaryName }}
+        v-card-text.px-0
+            v-container(fluid)
+                v-row
+                    v-col(cols=6, v-if="showTranslation")
+                        v-card
+                            v-card-title.py-1.secondary.white--text 訳語
+                            v-card-text.pa-2
+                                .text-content.d-flex(v-for="translation in word.translations")
+                                    .secondary.white--text.flex-shrink-0 {{ translation.title }}
+                                    .flex-grow-1.d-flex
+                                        .multiple-join.black--text(v-for="form in translation.forms") {{ form }}
+                    v-col(cols=6, v-if="showContent")
+                        v-card
+                            v-card-title.py-1.secondary.white--text 内容
+                            v-card-text.pa-2
+                                .text-content.d-flex(v-for="content in contents")
+                                    .secondary.white--text.flex-shrink-0(v-if="content.title !== ''") {{ content.title }}
+                                    .flex-grow-1
+                                        .black--text(v-for="text in content.textList") {{ text }}
+                    v-col(cols=6, v-if="showVariation")
+                        v-card
+                            v-card-title.py-1.secondary.white--text 変化形
+                            v-card-text.pa-2
+                                .text-content.d-flex(v-for="variation in word.variations")
+                                    .secondary.white--text.flex-shrink-0.flex-shrink-0(v-if="variation.title !== ''") {{ variation.title }}
+                                    .black--text.flex-grow-1 {{ variation.form }}
+                    v-col(cols=6, v-if="showRelation")
+                        v-card
+                            v-card-title.py-1.secondary.white--text 関連語
+                            v-card-text.pa-2
+                                .text-content.d-flex(v-for="relation in word.relations")
+                                    .secondary.white--text.flex-shrink-0.flex-shrink-0(v-if="relation.title !== ''") {{ relation.title }}
+                                    .black--text.flex-grow-1 {{ relation.entry.form }}
 </template>
 
 <script lang="ts">
@@ -70,87 +80,57 @@ export default class OtmResult extends Vue {
 }
 </script>
 
- <style lang="scss" scoped>
-$main-color: black;
-$sub-color: white;
+<style lang="scss" scoped>
+.multiple-join + .multiple-join {
+    &::before {
+        content: ",";
+        padding-left: 0px;
+        padding-right: 4px;
+    }
+}
 
-.word-title {
-    color: $sub-color;
-    background-color: $main-color;
-    padding-top: 3px;
-    padding-bottom: 3px;
+.text-content {
+    margin-top: 4px;
+    margin-bottom: 4px;
 
-    .word-name,
-    .word-tag,
-    .dictionary-name {
-        padding-top: 3px;
-        padding-bottom: 3px;
+    &:first-child {
+        margin-top: 0px;
+    }
+
+    &:last-child {
+        margin-bottom: 0px;
+    }
+
+    > * {
+        padding-left: 4px;
+        padding-right: 4px;
+        border-width: 1px 0px;
+        border-style: solid;
+    }
+    > :first-child {
         padding-left: 8px;
         padding-right: 8px;
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
     }
+    > :last-child {
+        border-right-width: 1px;
+    }
+}
 
-    .word-name {
+.translation-attribute {
+    &.obsolete::before,
+    &.slang::before {
         font-weight: bold;
+        border: 1px solid black;
     }
 
-    .word-tag {
-        margin-left: 2px;
-        margin-right: 2px;
-        color: $main-color;
-        background-color: $sub-color;
+    &:first-child {
+        margin-right: 0;
     }
-}
-
-.word-verbose {
-    flex-wrap: wrap;
-
-    .half {
-        box-sizing: border-box;
-        flex-shrink: 0;
-        flex-grow: 0;
-    }
-
-    @each $name in translation, content, variation, relation {
-        .word-#{$name}s {
-            padding: 2px;
-
-            .word-#{$name} {
-                border-bottom: solid 1px $main-color;
-                border-left: solid 1px $main-color;
-                border-right: solid 1px $main-color;
-                box-sizing: border-box;
-
-                &.title,
-                .word-#{$name}-title,
-                .word-#{$name}-text {
-                    padding-top: 3px;
-                    padding-bottom: 3px;
-                    padding-left: 5px;
-                    padding-right: 5px;
-                }
-
-                &.title {
-                    border-top : solid 1px $main-color
-                }
-
-                .word-#{$name}-title {
-                    flex-grow: 0;
-                    flex-shrink: 0;
-                    border-right: solid 1px $main-color;
-                }
-            }
-        }
-    }
-
-    .word-translation-form {
-        &::after {
-            content: ",";
-            margin-right: 5px;
-        }
-        &:last-child::after {
-            content: initial;
-            margin-right: 0px;
-        }
+    &:last-child {
+        margin-left: 0;
     }
 }
- </style>
+
+</style>

@@ -9,7 +9,8 @@ OTM-JSON形式の辞書内の単語や訳語を検索するためのWebアプリ
 
 ## 使用ライブラリなど
 * Vue.js
-
+    * Vuexなども含む
+* js-yaml
 その他はpackage.jsonのdependenciesなどを確認下さい．
 
 ## 対応ブラウザ

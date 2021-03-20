@@ -1,16 +1,21 @@
 <template lang="pug">
-    .add-space
-        Result(:words="displayWords")
-        hr(v-if="count > 0")
-        Pager(:pageCount="pageCount", @input="getPageCount", :count="count", :listingCount="listingCount", v-if="count > 0")
+    v-sheet(width="100%")
+        .my-2.word(v-for="word in displayWords")
+            OtmResult(v-if="word.dictionaryType === 'otm'", :word="word", :hiddenEmptyContents="hiddenEmptyContents", :updateWord="updateWord")
+            NtdicResult(v-else-if="word.dictionaryType === 'ntdic'", :word="word", :hiddenEmptyContents="hiddenEmptyContents", :updateWord="updateWord")
+            PDicResult(v-else-if="word.dictionaryType === 'pdic'", :word="word", :hiddenEmptyContents="hiddenEmptyContents", :updateWord="updateWord")
+            TnnResult(v-else-if="word.dictionaryType === 'tnn'", :word="word", :hiddenEmptyContents="hiddenEmptyContents", :updateWord="updateWord")
+            div(v-else) 何かミスってる
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import Result from "./Result.vue";
-import Pager from "./Pager.vue";
 import { BaseWord } from '@/libs/dictionary/dictionary';
-import DictionaryStore from '@/store/modules/dictionary.store';
+import DisplayStore from '@/store/modules/display.store';
+import OtmResult from "./OtmResult.vue";
+import PDicResult from "./PDicResult.vue";
+import NtdicResult from "./NtdicResult.vue";
+import { getModule } from 'vuex-module-decorators';
 
 @Component({
     model: {
@@ -18,19 +23,19 @@ import DictionaryStore from '@/store/modules/dictionary.store';
         event: "input",
     },
     components: {
-         Result,
-         Pager,
+        OtmResult,
+        PDicResult,
+        NtdicResult,
     },
 })
 export default class Viewer extends Vue {
+    @Prop() updateWord!: (word?: BaseWord) => void;
     @Prop() result!: BaseWord[];
     @Prop() listingCount!: number;
     @Prop() pageCount!: number;
-    private _decoratedInstance: DictionaryStore | null;
 
     constructor() {
         super();
-        this._decoratedInstance = null;
     }
 
     public get count(): number {
@@ -49,21 +54,11 @@ export default class Viewer extends Vue {
     public getPageCount(value: number) {
         this.$emit('input', value);
     }
+    
+    get hiddenEmptyContents(): boolean {
+        const instance = getModule(DisplayStore, this.$store);
+        return instance.hiddenEmptyContent;
+    }
 }
 
 </script>
-
-<style lang="scss" scoped>
-
-.add-space {
-    > * {
-        margin-top: 5px;
-        margin-bottom: 5px;
-    }
-
-    button {
-        margin-left: 5px;
-        margin-right: 5px;
-    }
-}
-</style>
